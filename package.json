@@ -1,0 +1,36 @@
+{
+  "name": "entertaining-crib",
+  "version": "1.0.0",
+  "description": "CDR rating for CCNQ",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/shimaore/entertaining-crib"
+  },
+  "keywords": [
+    "CDR",
+    "rating",
+    "CCNQ"
+  ],
+  "author": "Stéphane Alnet <stephane@shimaore.net> (http://stephane.shimaore.net/)",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/shimaore/entertaining-crib/issues"
+  },
+  "homepage": "https://github.com/shimaore/entertaining-crib",
+  "dependencies": {
+    "debug": "^2.2.0",
+    "moment-timezone": "^0.5.4",
+    "seem": "^1.2.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "coffee-script": "^1.10.0",
+    "memdown": "^1.2.0",
+    "mocha": "^2.5.3",
+    "pouchdb": "^5.4.0"
+  }
+}

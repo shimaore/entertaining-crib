@@ -1,41 +1,39 @@
 CDR rating for CCNQ
 ===================
 
-Select the last rating period that encloses the call-stamp
+    seem = require 'seem'
 
-    rating_of = (data,connect_stamp) ->
-      rating_periods = Object
-        .keys data.tarif
-        .map (t) ->
-          key: t
-          value: moment.tz(t,o.timezone)
-        .sort (a,b) ->
-          if a.value.isBefore b
-            return -1
-          if a.value.isAfter b
-            return 1
-          return 0
-        .reverse()
+Data
+----
 
-      rating_period = rating_periods.find (start_date) ->
-        start_date.value.isSameOrBefore connect_stamp
+* doc.account Store metadata about an account.
+* doc.account.master The master / branding name for the account.
+* doc.account.timezone Billing timezone
+* doc.account.ratings{} for each `start-date` expressed as `YYYY-MM-DD`, provides a record
+* doc.account.ratings{start-date}.table the name of the rating table
 
-      data[rating_period.key]
+```json
+{
+ "_id": "account:{account}",
+ "type": "account",
+ "account": "{account}",
 
-    find_prefix_in = seem (destination,database) ->
-
-      ids = [0..destination.length]
-        .map (l) -> "prefix:#{destination[0...l]}"
-        .reverse()
-
-      {rows} = database.allDocs
-        keys: ids
-        include_docs: true
-      (row.doc for row in rows when row.doc?)[0]
+ "master": "{master}",
+ "timezone": "{timezone}",
+ "rating": {
+  "{start-date}": {
+   "table": "{tarif}"
+  },
+  "{start-date}": {
+   "table": "{tarif}"
+  }
+ },
+}
+```
 
     class Rating
 
-      constructor: (@cfg) ->
+      constructor: (@cfg,@source,@PouchDB,@table_prefix = 'tarif') ->
 
       rate: seem (o) ->
         assert o.direction?
@@ -44,7 +42,7 @@ Select the last rating period that encloses the call-stamp
         assert o.stamp?
         assert o.duration?
 
-        assert o.source?
+        o.source = @source
         assert o.source_id?
 
         switch o.direction
@@ -60,24 +58,30 @@ Select the last rating period that encloses the call-stamp
 Client-side data
 
         rate_client_or_carrier = seem (data,db_prefix) =>
-          side = {}
-          side.timezone = data.timezone
-          unless side.timezone?
+          assert data.rating?
+          assert data.timezone?
+
+          rated = {}
+          rated.db_prefix = db_prefix
+
+          rated.timezone = data.timezone
+          unless rated.timezone?
             throw new Error 'No timezone found'
 
-          connect_stamp = moment.tz o.stamp, side.timezone
-          side.connect_stamp = connect_stamp.format()
+          connect_stamp = moment.tz o.stamp, rated.timezone
+          rated.connect_stamp = connect_stamp.format()
 
-          side.rating = rating_of data, connect_stamp
-          side.rating_table = "tarif-#{side.rating.tarif}"
+          rated.rating = rating_of data.rating, connect_stamp, o.timezone
+          rated.rating_table = [@table_prefix,rated.rating.table].join '-'
 
-          side.period = @period_for data
-          side._target_db = "rated-#{db_prefix}-#{period}"
+          rated.period = @period_for rated
+          rated._target_db = "rated-#{db_prefix}-#{rated.period}"
 
-          rating_db = new PouchDB [@cfg.rating_tables,side.rating_table].join ''
+          rating_db_name = [@cfg.rating_tables,rated.rating_table].join ''
+          rating_db = new @PouchDB rating_db_name
 
           try
-            configuration = yield db.get 'configuration'
+            configuration = yield rating_db.get 'configuration'
 
             rating_data = yield find_prefix_in o.remote_number, rating_db
 
@@ -85,69 +89,90 @@ Client-side data
               rating_data = yield rating_db
                 .get "destination:#{rating_data.destination}"
           finally
-            close_pouch db
+            close_pouch rating_db
 
-          assert configuration.currency?
-          assert configuration.divider?
-          assert configuration.per?
+          rating_db = null
 
-          side.currency = configuration.currency
-          side.divider = configuration.divider
-          side.per = configuration.per
+          assert configuration?.currency?, "No currency in configuration of #{rating_db_name}"
 
-          assert rating_data?
+          rated.currency = configuration.currency
+          rated.divider = configuration.divider ? 1
+          rated.per = configuration.per ? 60
 
-          side.description = rating_data.descriptiong
-          side.country = rating_data.country
+          assert rating_data?, "No rating data for #{o.remote_number} in #{rating_db_name}"
+          assert rating_data.description?, "No description for #{rating_data._id} in #{rating_db_name}"
+          assert rating_data.country?, "No country for #{rating_data._id} in #{rating_db_name}"
+          assert rating_data.initial?, "No initial for #{rating_data._id} in #{rating_db_name}"
+          assert rating_data.initial.cost?, "No initial cost for #{rating_data._id} in #{rating_db_name}"
+          assert rating_data.initial.duration?, "No initial duration for #{rating_data._id} in #{rating_db_name}"
+          assert rating_data.subsequent?, "No subsequent for #{rating_data._id} in #{rating_db_name}"
+          assert rating_data.subsequent.cost?, "No subsequent cost for #{rating_data._id} in #{rating_db_name}"
+          assert rating_data.subsequent.duration?, "No subsequent duration for #{rating_data._id} in #{rating_db_name}"
+
+          rated.description = rating_data.description
+          rated.country = rating_data.country
           # etc.
 
-          initial = side.initial = rating_data.initial
-          subsequent = side.subsequenet = rating_data.subsequent
+          initial = rated.initial = rating_data.initial
+          subsequent = rated.subsequent = rating_data.subsequent
 
-          # assuming call was answered
+assuming call was answered
+
           call_duration = o.duration
           if call_duration <= initial.duration
             amount = initial.cost
           else
-            # periods of s.duration duration
-            periods = Math.ceil (call_duration-initial.duration)/subsequent.duration
-            amount = initial.cost + (subsequent.cost/tarif.per) * (periods*subsequent.duration)
 
-          # round-up integer
+periods of s.duration duration
+
+            periods = Math.ceil (call_duration-initial.duration)/subsequent.duration
+            amount = initial.cost + (subsequent.cost/configuration.per) * (periods*subsequent.duration)
+
+round-up integer
+
           integer_amount = Math.ceil amount
 
-          # this is the actual value (expressed in tarif.currency)
-          actual_amount = integer_amount / tarif.divider
+this is the actual value (expressed in tarif.currency)
 
-          side.amount = amount
-          side.periods = periods
-          side.integer_amount = integer_amount
-          side.actual_amount = actual_amount
+          actual_amount = integer_amount / configuration.divider
 
-          side
+          rated.amount = amount
+          rated.periods = periods
+          rated.integer_amount = integer_amount
+          rated.actual_amount = actual_amount
+
+          rated
 
         if o.client?
+          debug 'Processing client', o.client
           client_data = yield @cfg.prov.get "account:#{o.client}"
 
           o.master = client_data.master
 
-          client_rated = rate_client_or_carrier client_data, "#{o.master}-#{o.client}"
+          client_rated = yield rate_client_or_carrier client_data, "#{o.master}-#{o.client}"
 
         if o.carrier?
+          debug 'Processing carrier', o.carrier
           carrier_data = yield @cfg.prov.get "carrier:#{o.carrier}"
 
-          carrier_rated = rate_client_or_carrier carrier_data, o.carrier
+          carrier_rated = yield rate_client_or_carrier carrier_data, o.carrier
+
+Finalize record
+
+        return [] unless client_rated? or carrier_rated?
 
         o._id = [
           o.billable_number
-          o.client.connect_stamp
+          client_rated?.connect_stamp ? carrier_rated?.connect_stamp
           o.remote_number
           o.duration
         ].join '-'
 
+Prepare return value
+
         r = []
 
-        push_this = (rated) ->
+        push = (rated) ->
           return unless rated?
           w = {}
           for own k,v of o
@@ -159,6 +184,8 @@ Client-side data
         push client_rated
         push carrier_rated
 
+The return values (in the array) should be stored in `_target_db` as `_id`.
+
         return r
 
       period_for: (side) ->
@@ -169,7 +196,10 @@ Client-side data
       client_from_account: (account) ->
         return account
 
-      rate_from_freeswitch: seem (db_name,cdr) ->
+Rate a FreeSwitch CDR
+---------------------
+
+      rate_from_freeswitch: seem (cdr) ->
         vars = cdr.variables
         stamp = vars.answer_uepoch.replace /\d\d\d$/, ''
 
@@ -183,7 +213,6 @@ Required
           stamp: (moment stamp).format()
           duration: vars.billsec
 
-          source: db_name
           source_id: cdr._id
 
 Required if present
@@ -198,3 +227,18 @@ Optional (defaults are provided)
 Unused
 
           connect_ms: stamp
+
+    close_pouch = (db) ->
+      if db.close?
+        db.close()
+      else
+        db.emit 'destroyed'
+
+    module.exports = Rating
+
+    rating_of = require './lib/rating_of'
+    find_prefix_in = require './lib/find_prefix_in'
+    moment = require 'moment-timezone'
+    assert = require 'assert'
+    pkg = require './package'
+    debug = (require 'debug') pkg.name
