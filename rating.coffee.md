@@ -7,7 +7,7 @@ Data
 ----
 
 * doc.account Store metadata about an account.
-* doc.account.master The master / branding name for the account.
+* doc.account.entity The entity / master-account / branding name for the account.
 * doc.account.timezone Billing timezone
 * doc.account.ratings{} for each `start-date` expressed as `YYYY-MM-DD`, provides a record
 * doc.account.ratings{start-date}.table the name of the rating table
@@ -18,7 +18,7 @@ Data
  "type": "account",
  "account": "{account}",
 
- "master": "{master}",
+ "entity": "{entity}",
  "timezone": "{timezone}",
  "rating": {
   "{start-date}": {
@@ -33,7 +33,12 @@ Data
 
     class Rating
 
-      constructor: (@cfg,@source,@PouchDB,@table_prefix = 'tarif') ->
+      constructor: (@cfg) ->
+        @table_prefix = @cfg.table_prefix ? 'tarif'
+        @source = @cfg.source
+        assert @source, 'Missing source'
+        @PouchDB = @cfg.rating_tables
+        assert @PouchDB, 'Missing rating_tables object'
 
       rate: seem (o) ->
         assert o.direction?
@@ -75,9 +80,9 @@ Client-side data
           rated.rating_table = [@table_prefix,rated.rating.table].join '-'
 
           rated.period = @period_for rated
-          rated._target_db = "rated-#{db_prefix}-#{rated.period}"
+          rated._target_db = "rated_#{db_prefix}_#{rated.period}"
 
-          rating_db_name = [@cfg.rating_tables,rated.rating_table].join ''
+          rating_db_name = rated.rating_table
           rating_db = new @PouchDB rating_db_name
 
           try
@@ -147,9 +152,9 @@ this is the actual value (expressed in tarif.currency)
           debug 'Processing client', o.client
           client_data = yield @cfg.prov.get "account:#{o.client}"
 
-          o.master = client_data.master
+          o.entity = client_data.entity
 
-          client_rated = yield rate_client_or_carrier client_data, "#{o.master}-#{o.client}"
+          client_rated = yield rate_client_or_carrier client_data, "#{o.entity}_#{o.client}"
 
         if o.carrier?
           debug 'Processing carrier', o.carrier
@@ -193,17 +198,26 @@ The return values (in the array) should be stored in `_target_db` as `_id`.
           .tz side.connect_stamp, side.timezone
           .format 'YYYY-MM'
 
-      client_from_account: (account) ->
-        return account
-
 Rate a FreeSwitch CDR
 ---------------------
 
-      rate_from_freeswitch: seem (cdr) ->
+    class FreeSwitchRating extends Rating
+
+      client_from_account: (account) ->
+        return account
+
+      rate: (cdr) ->
         vars = cdr.variables
+
+        if not vars?
+          return super cdr
+
+        # winner = JSON.parse vars.ccnq_winner ? {}
+        attrs = JSON.parse vars.ccnq_attrs ? {}
+
         stamp = vars.answer_uepoch.replace /\d\d\d$/, ''
 
-        @rate
+        data =
 
 Required
 
@@ -217,6 +231,8 @@ Required
 
 Required if present
 
+Note: `ccnq_carrier` was added in tough-rate 14.5.0
+
           client: @client_from_account vars.ccnq_account
           carrier: vars.ccnq_carrier
 
@@ -228,13 +244,22 @@ Unused
 
           connect_ms: stamp
 
+Do not rate / report emergency calls to the client. (The )
+
+        delete data.client if attrs.emergency
+
+        super data
+
+Toolbox
+=======
+
     close_pouch = require './close_pouch'
 
-    module.exports = Rating
+    module.exports = {Rating,FreeSwitchRating}
 
     rating_of = require './lib/rating_of'
     find_prefix_in = require './lib/find_prefix_in'
     moment = require 'moment-timezone'
     assert = require 'assert'
     pkg = require './package'
-    debug = (require 'debug') pkg.name
+    debug = (require 'debug') "#{pkg.name}:rating"

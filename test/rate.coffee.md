@@ -4,11 +4,13 @@
     PouchDB = (require 'pouchdb').defaults db: require 'memdown'
 
     describe 'Rating', ->
-      Rating = require '../rating'
+      {Rating} = require '../rating'
       prov = new PouchDB 'prov'
+      rating_tables = PouchDB
 
       it 'should not rate unless client or carrier are specified', seem ->
-        r = new Rating {prov}, 'test1'
+        r = new Rating {prov,rating_tables,source:'test1'}
+
         a = yield r.rate
           direction: 'egress'
           from: '33972222713'
@@ -16,10 +18,11 @@
           stamp: '2013-05-14 12:52:23'
           duration: 23
           source_id: 'd895b2ea-58fe-4215-aae7-ca66a6c3099c'
+
         a.should.have.length 0
 
       it 'should rate carrier', seem ->
-        r = new Rating {prov}, 'test2', PouchDB
+        r = new Rating {prov,rating_tables,source:'test2'}
         yield prov.put
           _id: 'carrier:default'
           timezone: 'America/New_York'
@@ -52,6 +55,7 @@
           duration: 23
           source_id: 'd895b2ea-58fe-4215-aae7-ca66a6c3099c'
           carrier: 'default'
+
         a.should.have.length 1
         a[0].should.have.property 'billable_number', '33972222713'
         a[0].should.have.property 'remote_number', '18002255288'
@@ -66,7 +70,7 @@
         a[0].should.have.property '_target_db'
 
       it 'should rate client', seem ->
-        r = new Rating {prov}, 'test3', PouchDB
+        r = new Rating {prov,rating_tables,source:'test3'}
         yield prov.put
           _id: 'account:client-1'
           timezone: 'America/New_York'
@@ -99,6 +103,7 @@
           duration: 23
           source_id: 'd895b2ea-58fe-4215-aae7-ca66a6c3099c'
           client: 'client-1'
+
         a.should.have.length 1
         a[0].should.have.property 'billable_number', '33972222713'
         a[0].should.have.property 'remote_number', '19005551212'
@@ -113,7 +118,7 @@
         a[0].should.have.property '_target_db'
 
       it 'should rate client and carrier', seem ->
-        r = new Rating {prov}, 'test4', PouchDB
+        r = new Rating {prov,rating_tables,source:'test4'}
         yield prov.put
           _id: 'account:2'
           timezone: 'America/New_York'
@@ -171,6 +176,7 @@
           source_id: 'd895b2ea-58fe-4215-aae7-ca66a6c3099c'
           client: '2'
           carrier: 'A'
+
         a.should.have.length 2
         a[0].should.have.property 'billable_number', '33972222713'
         a[0].should.have.property 'remote_number', '19005551212'
@@ -193,4 +199,4 @@
         a[1].should.have.property 'subsequent'
         a[1].subsequent.should.have.property 'cost', 340
         a[1].should.have.property '_id', '33972222713-2013-05-14T12:52:23-04:00-19005551212-23'
-        a[1].should.have.property '_target_db', 'rated-A-2013-05'
+        a[1].should.have.property '_target_db', 'rated_A_2013-05'
