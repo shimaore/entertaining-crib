@@ -228,11 +228,7 @@ Unused
 
           connect_ms: stamp
 
-    close_pouch = (db) ->
-      if db.close?
-        db.close()
-      else
-        db.emit 'destroyed'
+    close_pouch = require './close_pouch'
 
     module.exports = Rating
 
