@@ -4,6 +4,7 @@
   "description": "CDR rating for CCNQ",
   "main": "index.js",
   "scripts": {
+    "pretest": "npm install",
     "test": "mocha"
   },
   "repository": {
