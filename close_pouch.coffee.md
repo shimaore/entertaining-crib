@@ -3,4 +3,3 @@
         db.close()
       else
         db.emit 'destroyed'
-

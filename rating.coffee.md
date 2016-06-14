@@ -6,26 +6,24 @@ CDR rating for CCNQ
 Data
 ----
 
-* doc.account Store metadata about an account.
-* doc.account.entity The entity / master-account / branding name for the account.
-* doc.account.timezone Billing timezone
-* doc.account.ratings{} for each `start-date` expressed as `YYYY-MM-DD`, provides a record
-* doc.account.ratings{start-date}.table the name of the rating table
+* doc.client Store metadata about a client.
+* doc.client.timezone Billing timezone
+* doc.client.ratings{} for each `start-date` expressed as `YYYY-MM-DD`, provides a record
+* doc.client.ratings{start-date}.table the name of the rating table
 
 ```json
 {
- "_id": "account:{account}",
- "type": "account",
- "account": "{account}",
+ "_id": "client:{client}",
+ "type": "client",
+ "client": "{client}",
 
- "entity": "{entity}",
  "timezone": "{timezone}",
  "rating": {
   "{start-date}": {
-   "table": "{tarif}"
+   "table": "{rates}"
   },
   "{start-date}": {
-   "table": "{tarif}"
+   "table": "{rates}"
   }
  },
 }
@@ -34,7 +32,7 @@ Data
     class Rating
 
       constructor: (@cfg) ->
-        @table_prefix = @cfg.table_prefix ? 'tarif'
+        @table_prefix = @cfg.table_prefix ? 'rates'
         @source = @cfg.source
         assert @source, 'Missing source'
         @PouchDB = @cfg.rating_tables
@@ -89,10 +87,14 @@ Client-side data
             configuration = yield rating_db.get 'configuration'
 
             rating_data = yield find_prefix_in o.remote_number, rating_db
+            rated.prefix = rating_data.prefix
 
             if rating_data?.destination?
+              rated.destination = rating_data.destination
               rating_data = yield rating_db
                 .get "destination:#{rating_data.destination}"
+          catch error
+            debug "rate_client_or_carrier: #{error.stack ? error}"
           finally
             close_pouch rating_db
 
@@ -100,6 +102,7 @@ Client-side data
 
           assert configuration?.currency?, "No currency in configuration of #{rating_db_name}"
 
+          rated.configuration = configuration
           rated.currency = configuration.currency
           rated.divider = configuration.divider ? 1
           rated.per = configuration.per ? 60
@@ -137,7 +140,7 @@ round-up integer
 
           integer_amount = Math.ceil amount
 
-this is the actual value (expressed in tarif.currency)
+this is the actual value (expressed in configuration.currency)
 
           actual_amount = integer_amount / configuration.divider
 
@@ -150,17 +153,15 @@ this is the actual value (expressed in tarif.currency)
 
         if o.client?
           debug 'Processing client', o.client
-          client_data = yield @cfg.prov.get "account:#{o.client}"
+          client_data = yield @cfg.prov.get "client:#{o.client}"
 
-          o.entity = client_data.entity
-
-          client_rated = yield rate_client_or_carrier client_data, "#{o.entity}_#{o.client}"
+          client_rated = yield rate_client_or_carrier client_data, "client_#{o.client}"
 
         if o.carrier?
           debug 'Processing carrier', o.carrier
           carrier_data = yield @cfg.prov.get "carrier:#{o.carrier}"
 
-          carrier_rated = yield rate_client_or_carrier carrier_data, o.carrier
+          carrier_rated = yield rate_client_or_carrier carrier_data, "carrier_#{o.carrier}"
 
 Finalize record
 
