@@ -73,13 +73,13 @@ this is the actual value (expressed in configuration.currency)
         rated
 
       rate: seem (o) ->
-        assert o.direction?
-        assert o.from?
-        assert o.to?
-        assert o.stamp?
+        return unless o.direction?
+        return unless o.from?
+        return unless o.to?
+        return unless o.stamp?
 
         o.source = @source
-        assert o.source_id?
+        return unless o.source?
 
         switch o.direction
           when 'ingress'
