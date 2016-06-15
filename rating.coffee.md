@@ -110,9 +110,6 @@ this is the actual value (expressed in configuration.currency)
           rated.rating = rating_of data.rating, connect_stamp, o.timezone
           rated.rating_table = [@table_prefix,rated.rating.table].join '-'
 
-          rated.period = @period_for rated
-          rated._target_db = "rated_#{db_prefix}_#{rated.period}"
-
           rating_db_name = rated.rating_table
           rating_db = new @PouchDB rating_db_name
 
@@ -201,14 +198,7 @@ Prepare return value
         push client_rated
         push carrier_rated
 
-The return values (in the array) should be stored in `_target_db` as `_id`.
-
         return r
-
-      period_for: (side) ->
-        moment
-          .tz side.connect_stamp, side.timezone
-          .format 'YYYY-MM'
 
 Rate a FreeSwitch CDR
 ---------------------
