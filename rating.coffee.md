@@ -36,7 +36,7 @@ Data
         @PouchDB = @cfg.rating_tables
         assert @PouchDB, 'Missing rating_tables object'
 
-      compute: seem (rated) ->
+      compute: (rated) ->
 
 assuming call was answered
 
@@ -48,7 +48,7 @@ assuming call was answered
         initial = rated.initial = rating_data.initial
         subsequent = rated.subsequent = rating_data.subsequent
 
-        call_duration = o.duration
+        call_duration = rated.duration
         if call_duration <= initial.duration
           amount = initial.cost
         else
@@ -56,7 +56,7 @@ assuming call was answered
 periods of s.duration duration
 
           periods = Math.ceil (call_duration-initial.duration)/subsequent.duration
-          amount = initial.cost + (subsequent.cost/configuration.per) * (periods*subsequent.duration)
+          amount = initial.cost + (subsequent.cost/rated.configuration.per) * (periods*subsequent.duration)
 
 round-up integer
 
@@ -64,7 +64,7 @@ round-up integer
 
 this is the actual value (expressed in configuration.currency)
 
-        actual_amount = integer_amount / configuration.divider
+        actual_amount = integer_amount / rated.configuration.divider
 
         rated.amount = amount
         rated.periods = periods
@@ -77,8 +77,6 @@ this is the actual value (expressed in configuration.currency)
         assert o.from?
         assert o.to?
         assert o.stamp?
-
-        rated.duration = o.duration
 
         o.source = @source
         assert o.source_id?
@@ -93,12 +91,13 @@ this is the actual value (expressed in configuration.currency)
           else
             throw new Error "invalid direction: #{o.direction}"
 
-        rate_client_or_carrier = seem (data,db_prefix) =>
+        rate_client_or_carrier = seem (data) =>
           assert data.rating?
           assert data.timezone?
 
           rated = {}
-          rated.db_prefix = db_prefix
+
+          rated.duration = o.duration
 
           rated.timezone = data.timezone
           unless rated.timezone?
@@ -156,19 +155,15 @@ Main handling
 
         if o.client?
           debug 'Processing client', o.client
-          client_data ?= yield @cfg.prov.get "endpoint:#{o.client}"
 
-          client_rated = yield rate_client_or_carrier client_data, "client_#{o.client}"
+          client_rated = yield rate_client_or_carrier o.client
           client_rated.side = 'client'
-          client_rated.client_data = client_data
 
         if o.carrier?
           debug 'Processing carrier', o.carrier
-          carrier_data ?= yield @cfg.prov.get "carrier:#{o.carrier}"
 
-          carrier_rated = yield rate_client_or_carrier carrier_data, "carrier_#{o.carrier}"
+          carrier_rated = yield rate_client_or_carrier o.carrier
           carrier_rated.side = 'carrier'
-          carrier_rated.carrier_data = carrier_data
 
 Finalize record
 
@@ -228,27 +223,44 @@ Required
 
           source_id: cdr._id
 
+        @rate_freeswitch data, vars
+
+      rate_freeswitch: seem (data,vars) ->
+
 Required if present
 
 Note: `ccnq_carrier` was added in tough-rate 14.5.0
+Note: `ccnq_endpoint` and `ccnq_endpoint_json` were added in huge-play 12.3.0
 
-          client: vars.ccnq_endpoint
-          client_data: JSON.parse vars.ccnq_endpoint_json ? null
-          carrier: vars.ccnq_carrier
+Data for the client
 
-Optional (defaults are provided)
+        switch
+          when vars.ccnq_endpoint_json?
+            data.client = JSON.parse vars.ccnq_endpoint_json
+          when vars.ccnq_endpoint?
+            data.client = yield @cfg.prov.get "endpoint:#{vars.ccnq_endpoint}"
 
-          timezone: vars.ccnq_timezone
+Data for the carrier
 
-Unused
+        switch
+          when vars.ccnq_carrier_json?
+            data.carrier = JSON.parse vars.ccnq_carrier_json
+          when vars.ccnq_carrier?
+            data.carrier = yield @cfg.prov.get "carrier:#{vars.ccnq_carrier}"
 
-          connect_ms: stamp
+Timezone (used to evaluate)
+
+        switch
+          when vars.ccnq_timezone?
+            data.timezone = vars.ccnq_timezone
+          when data.client?.timezone?
+            data.timezone = data.client.timezone
 
 Do not rate / report emergency calls to the client. (The )
 
         delete data.client if attrs.emergency
 
-        super data
+        Rating::rate.call this, data
 
 Toolbox
 =======

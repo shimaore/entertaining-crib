@@ -2,8 +2,9 @@
   "name": "entertaining-crib",
   "version": "1.0.0",
   "description": "CDR rating for CCNQ",
-  "main": "index.js",
+  "main": "rating.js",
   "scripts": {
+    "prepublish": "coffee -c *.coffee.md lib/*.coffee.md",
     "pretest": "npm install",
     "test": "mocha"
   },

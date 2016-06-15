@@ -1,15 +1,16 @@
     seem = require 'seem'
+    pkg = require '../package'
+    debug = (require 'debug') "#{pkg.name}:test:rate"
     {expect} = chai = require 'chai'
     chai.should()
     PouchDB = (require 'pouchdb').defaults db: require 'memdown'
 
     describe 'Rating', ->
       {Rating} = require '../rating'
-      prov = new PouchDB 'prov'
       rating_tables = PouchDB
 
       it 'should not rate unless client or carrier are specified', seem ->
-        r = new Rating {prov,rating_tables,source:'test1'}
+        r = new Rating {rating_tables,source:'test1'}
 
         a = yield r.rate
           direction: 'egress'
@@ -22,13 +23,8 @@
         a.should.have.length 0
 
       it 'should rate carrier', seem ->
-        r = new Rating {prov,rating_tables,source:'test2'}
-        yield prov.put
-          _id: 'carrier:default'
-          timezone: 'America/New_York'
-          rating:
-            '2012-12-14': table:'cheap'
-        cheap = new PouchDB 'rates-cheap'
+        r = new Rating {rating_tables,source:'test2'}
+        cheap = new rating_tables 'rates-cheap'
         yield cheap.put
           _id:'configuration'
           currency: 'EUR'
@@ -54,7 +50,11 @@
           stamp: '2013-05-14 12:52:23'
           duration: 23
           source_id: 'd895b2ea-58fe-4215-aae7-ca66a6c3099c'
-          carrier: 'default'
+          carrier:
+            _id: 'carrier:default'
+            timezone: 'America/New_York'
+            rating:
+              '2012-12-14': table:'cheap'
 
         a.should.have.length 1
         a[0].should.have.property 'billable_number', '33972222713'
@@ -78,17 +78,10 @@
         a[0].should.have.property 'subsequent'
         a[0].subsequent.should.have.property 'cost', 34
         a[0].should.have.property '_id'
-        a[0].should.have.property '_target_db'
 
       it 'should rate client', seem ->
-        r = new Rating {prov,rating_tables,source:'test3'}
-        yield prov.put
-          _id: 'client:client-1'
-          client: 'client-1'
-          timezone: 'America/New_York'
-          rating:
-            '2012-12-14': table:'expensive'
-        expensive = new PouchDB 'rates-expensive'
+        r = new Rating {rating_tables,source:'test3'}
+        expensive = new rating_tables 'rates-expensive'
         yield expensive.put
           _id:'configuration'
           currency: 'EUR'
@@ -114,7 +107,10 @@
           stamp: '2013-05-14 12:52:23'
           duration: 23
           source_id: 'd895b2ea-58fe-4215-aae7-ca66a6c3099c'
-          client: 'client-1'
+          client:
+            timezone: 'America/New_York'
+            rating:
+              '2012-12-14': table:'expensive'
 
         a.should.have.length 1
         a[0].should.have.property 'billable_number', '33972222713'
@@ -138,21 +134,10 @@
         a[0].should.have.property 'subsequent'
         a[0].subsequent.should.have.property 'cost', 1500
         a[0].should.have.property '_id'
-        a[0].should.have.property '_target_db'
 
       it 'should rate client and carrier', seem ->
-        r = new Rating {prov,rating_tables,source:'test4'}
-        yield prov.put
-          _id: 'client:2'
-          timezone: 'America/New_York'
-          rating:
-            '2012-12-14': table:'client-2'
-        yield prov.put
-          _id: 'carrier:A'
-          timezone: 'America/New_York'
-          rating:
-            '2012-12-14': table:'carrier-A'
-        expensive = new PouchDB 'rates-client-2'
+        r = new Rating {rating_tables,source:'test4'}
+        expensive = new rating_tables 'rates-client-2'
         yield expensive.put
           _id:'configuration'
           currency: 'EUR'
@@ -170,7 +155,7 @@
           subsequent:
             cost: 1500
             duration: 30
-        cheap = new PouchDB 'rates-carrier-A'
+        cheap = new rating_tables 'rates-carrier-A'
         yield cheap.put
           _id:'configuration'
           currency: 'EUR'
@@ -197,8 +182,14 @@
           stamp: '2013-05-14 12:52:23'
           duration: 23
           source_id: 'd895b2ea-58fe-4215-aae7-ca66a6c3099c'
-          client: '2'
-          carrier: 'A'
+          client:
+            timezone: 'America/New_York'
+            rating:
+              '2012-12-14': table:'client-2'
+          carrier:
+            timezone: 'America/New_York'
+            rating:
+              '2012-12-14': table:'carrier-A'
 
         a.should.have.length 2
         a[0].should.have.property 'billable_number', '33972222713'
@@ -211,7 +202,6 @@
         a[0].should.have.property 'subsequent'
         a[0].subsequent.should.have.property 'cost', 1500
         a[0].should.have.property '_id'
-        a[0].should.have.property '_target_db', 'rated_client_2_2013-05'
         a[1].should.have.property 'billable_number', '33972222713'
         a[1].should.have.property 'remote_number', '19005551212'
         a[1].should.have.property 'source', 'test4'
@@ -222,16 +212,10 @@
         a[1].should.have.property 'subsequent'
         a[1].subsequent.should.have.property 'cost', 340
         a[1].should.have.property '_id', '33972222713-2013-05-14T12:52:23-04:00-19005551212-23'
-        a[1].should.have.property '_target_db', 'rated_carrier_A_2013-05'
 
       it 'should rate destinations', seem ->
-        r = new Rating {prov,rating_tables,source:'test5'}
-        yield prov.put
-          _id: 'carrier:B'
-          timezone: 'America/New_York'
-          rating:
-            '2012-12-14': table:'cheap-5'
-        cheap = new PouchDB 'rates-cheap-5'
+        r = new Rating {rating_tables,source:'test5'}
+        cheap = new rating_tables 'rates-cheap-5'
         yield cheap.put
           _id:'configuration'
           currency: 'EUR'
@@ -261,7 +245,10 @@
           stamp: '2013-05-14 12:52:23'
           duration: 23
           source_id: 'd895b2ea-58fe-4215-aae7-ca66a6c3099c'
-          carrier: 'B'
+          carrier:
+            timezone: 'America/New_York'
+            rating:
+              '2012-12-14': table:'cheap-5'
         .catch (error) -> debug "rate #{error.stack ? error}"
 
         a.should.have.length 1
@@ -287,4 +274,3 @@
         a[0].should.have.property 'subsequent'
         a[0].subsequent.should.have.property 'cost', 34
         a[0].should.have.property '_id'
-        a[0].should.have.property '_target_db'
