@@ -6,7 +6,7 @@
     PouchDB = (require 'pouchdb').defaults db: require 'memdown'
 
     describe 'Rating', ->
-      {Rating} = require '../rating'
+      Rating = require '../rating'
       rating_tables = PouchDB
 
       it 'should not rate unless client or carrier are specified', seem ->
