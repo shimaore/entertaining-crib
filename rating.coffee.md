@@ -155,17 +155,23 @@ this is the actual value (expressed in configuration.currency)
 
           rated
 
+Main handling
+
         if o.client?
           debug 'Processing client', o.client
-          client_data = yield @cfg.prov.get "client:#{o.client}"
+          client_data ?= yield @cfg.prov.get "endpoint:#{o.client}"
 
           client_rated = yield rate_client_or_carrier client_data, "client_#{o.client}"
+          client_rated.side = 'client'
+          client_rated.client_data = client_data
 
         if o.carrier?
           debug 'Processing carrier', o.carrier
-          carrier_data = yield @cfg.prov.get "carrier:#{o.carrier}"
+          carrier_data ?= yield @cfg.prov.get "carrier:#{o.carrier}"
 
           carrier_rated = yield rate_client_or_carrier carrier_data, "carrier_#{o.carrier}"
+          carrier_rated.side = 'carrier'
+          carrier_rated.carrier_data = carrier_data
 
 Finalize record
 
@@ -177,6 +183,7 @@ Finalize record
           o.remote_number
           o.duration
         ].join '-'
+        o.type = 'rated'
 
 Prepare return value
 
