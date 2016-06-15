@@ -6,17 +6,15 @@ CDR rating for CCNQ
 Data
 ----
 
-* doc.client Store metadata about a client.
-* doc.client.timezone Billing timezone
-* doc.client.ratings{} for each `start-date` expressed as `YYYY-MM-DD`, provides a record
-* doc.client.ratings{start-date}.table the name of the rating table
+* doc.endpoint.timezone Billing timezone
+* doc.endpoint.ratings{} for each `start-date` expressed as `YYYY-MM-DD`, provides a record
+* doc.endpoint.ratings[start-date].table the name of the rating table
+* doc.carrier.timezone Billing timezone
+* doc.carrier.ratings{} for each `start-date` expressed as `YYYY-MM-DD`, provides a record
+* doc.carrier.ratings[start-date].table the name of the rating table
 
 ```json
 {
- "_id": "client:{client}",
- "type": "client",
- "client": "{client}",
-
  "timezone": "{timezone}",
  "rating": {
   "{start-date}": {
@@ -94,8 +92,6 @@ this is the actual value (expressed in configuration.currency)
             o.remote_number = o.to
           else
             throw new Error "invalid direction: #{o.direction}"
-
-Client-side data
 
         rate_client_or_carrier = seem (data,db_prefix) =>
           assert data.rating?
@@ -212,9 +208,6 @@ Rate a FreeSwitch CDR
 
     class FreeSwitchRating extends Rating
 
-      client_from_account: (account) ->
-        return account
-
       rate: (cdr) ->
         vars = cdr.variables
 
@@ -242,7 +235,8 @@ Required if present
 
 Note: `ccnq_carrier` was added in tough-rate 14.5.0
 
-          client: @client_from_account vars.ccnq_account
+          client: vars.ccnq_endpoint
+          client_data: JSON.parse vars.ccnq_endpoint_json ? null
           carrier: vars.ccnq_carrier
 
 Optional (defaults are provided)
