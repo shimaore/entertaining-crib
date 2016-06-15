@@ -38,12 +38,49 @@ Data
         @PouchDB = @cfg.rating_tables
         assert @PouchDB, 'Missing rating_tables object'
 
+      compute: seem (rated) ->
+
+assuming call was answered
+
+        unless rated.duration?
+          return rated
+
+        {rating_data} = rated
+
+        initial = rated.initial = rating_data.initial
+        subsequent = rated.subsequent = rating_data.subsequent
+
+        call_duration = o.duration
+        if call_duration <= initial.duration
+          amount = initial.cost
+        else
+
+periods of s.duration duration
+
+          periods = Math.ceil (call_duration-initial.duration)/subsequent.duration
+          amount = initial.cost + (subsequent.cost/configuration.per) * (periods*subsequent.duration)
+
+round-up integer
+
+        integer_amount = Math.ceil amount
+
+this is the actual value (expressed in configuration.currency)
+
+        actual_amount = integer_amount / configuration.divider
+
+        rated.amount = amount
+        rated.periods = periods
+        rated.integer_amount = integer_amount
+        rated.actual_amount = actual_amount
+        rated
+
       rate: seem (o) ->
         assert o.direction?
         assert o.from?
         assert o.to?
         assert o.stamp?
-        assert o.duration?
+
+        rated.duration = o.duration
 
         o.source = @source
         assert o.source_id?
@@ -108,8 +145,6 @@ Client-side data
           rated.per = configuration.per ? 60
 
           assert rating_data?, "No rating data for #{o.remote_number} in #{rating_db_name}"
-          assert rating_data.description?, "No description for #{rating_data._id} in #{rating_db_name}"
-          assert rating_data.country?, "No country for #{rating_data._id} in #{rating_db_name}"
           assert rating_data.initial?, "No initial for #{rating_data._id} in #{rating_db_name}"
           assert rating_data.initial.cost?, "No initial cost for #{rating_data._id} in #{rating_db_name}"
           assert rating_data.initial.duration?, "No initial duration for #{rating_data._id} in #{rating_db_name}"
@@ -117,37 +152,10 @@ Client-side data
           assert rating_data.subsequent.cost?, "No subsequent cost for #{rating_data._id} in #{rating_db_name}"
           assert rating_data.subsequent.duration?, "No subsequent duration for #{rating_data._id} in #{rating_db_name}"
 
-          rated.description = rating_data.description
-          rated.country = rating_data.country
+          rated.rating_data = rating_data
           # etc.
 
-          initial = rated.initial = rating_data.initial
-          subsequent = rated.subsequent = rating_data.subsequent
-
-assuming call was answered
-
-          call_duration = o.duration
-          if call_duration <= initial.duration
-            amount = initial.cost
-          else
-
-periods of s.duration duration
-
-            periods = Math.ceil (call_duration-initial.duration)/subsequent.duration
-            amount = initial.cost + (subsequent.cost/configuration.per) * (periods*subsequent.duration)
-
-round-up integer
-
-          integer_amount = Math.ceil amount
-
-this is the actual value (expressed in configuration.currency)
-
-          actual_amount = integer_amount / configuration.divider
-
-          rated.amount = amount
-          rated.periods = periods
-          rated.integer_amount = integer_amount
-          rated.actual_amount = actual_amount
+          @compute rated
 
           rated
 
