@@ -20,7 +20,7 @@
           duration: 23
           source_id: 'd895b2ea-58fe-4215-aae7-ca66a6c3099c'
 
-        a.should.have.length 0
+        Object.keys(a).should.have.length 0
 
       it 'should rate carrier', seem ->
         r = new Rating {rating_tables,source:'test2'}
@@ -56,28 +56,30 @@
             rating:
               '2012-12-14': table:'cheap'
 
-        a.should.have.length 1
-        a[0].should.have.property 'billable_number', '33972222713'
-        a[0].should.have.property 'remote_number', '18002255288'
-        a[0].should.have.property 'source', 'test2'
-        a[0].should.have.property 'source_id'
-        a[0].should.have.property 'rating'
-        a[0].should.have.property 'rating_table'
-        a[0].should.have.property 'connect_stamp'
-        a[0].should.have.property 'timezone'
-        a[0].should.have.property 'duration'
-        a[0].should.have.property 'carrier'
-        a[0].should.have.property 'prefix'
-        a[0].should.have.property 'configuration'
-        a[0].should.have.property 'currency', 'EUR'
-        a[0].should.have.property 'periods', 23
-        a[0].should.have.property 'integer_amount', 14
-        a[0].should.have.property 'amount'
-        a[0].should.have.property 'actual_amount'
-        a[0].should.have.property 'divider', 1000
-        a[0].should.have.property 'subsequent'
-        a[0].subsequent.should.have.property 'cost', 34
-        a[0].should.have.property '_id'
+        Object.keys(a).should.have.length 1
+        a.should.have.property 'carrier'
+        a.should.not.have.property 'client'
+        a.carrier.should.have.property 'billable_number', '33972222713'
+        a.carrier.should.have.property 'remote_number', '18002255288'
+        a.carrier.should.have.property 'source', 'test2'
+        a.carrier.should.have.property 'source_id'
+        a.carrier.should.have.property 'rating'
+        a.carrier.should.have.property 'rating_table'
+        a.carrier.should.have.property 'connect_stamp'
+        a.carrier.should.have.property 'timezone'
+        a.carrier.should.have.property 'duration'
+        a.carrier.should.have.property 'carrier'
+        a.carrier.should.have.property 'prefix'
+        a.carrier.should.have.property 'configuration'
+        a.carrier.should.have.property 'currency', 'EUR'
+        a.carrier.should.have.property 'periods', 23
+        a.carrier.should.have.property 'integer_amount', 14
+        a.carrier.should.have.property 'amount'
+        a.carrier.should.have.property 'actual_amount'
+        a.carrier.should.have.property 'divider', 1000
+        a.carrier.should.have.property 'subsequent'
+        a.carrier.subsequent.should.have.property 'cost', 34
+        a.carrier.should.have.property '_id'
 
       it 'should rate client', seem ->
         r = new Rating {rating_tables,source:'test3'}
@@ -112,28 +114,30 @@
             rating:
               '2012-12-14': table:'expensive'
 
-        a.should.have.length 1
-        a[0].should.have.property 'billable_number', '33972222713'
-        a[0].should.have.property 'remote_number', '19005551212'
-        a[0].should.have.property 'source', 'test3'
-        a[0].should.have.property 'source_id'
-        a[0].should.have.property 'rating'
-        a[0].should.have.property 'rating_table'
-        a[0].should.have.property 'connect_stamp'
-        a[0].should.have.property 'timezone'
-        a[0].should.have.property 'duration'
-        a[0].should.have.property 'client'
-        a[0].should.have.property 'prefix'
-        a[0].should.have.property 'configuration'
-        a[0].should.have.property 'currency', 'EUR'
-        a[0].should.have.property 'periods', 1
-        a[0].should.have.property 'integer_amount', 750
-        a[0].should.have.property 'amount'
-        a[0].should.have.property 'actual_amount'
-        a[0].should.have.property 'divider', 100
-        a[0].should.have.property 'subsequent'
-        a[0].subsequent.should.have.property 'cost', 1500
-        a[0].should.have.property '_id'
+        Object.keys(a).should.have.length 1
+        a.should.have.property 'client'
+        a.should.not.have.property 'carrier'
+        a.client.should.have.property 'billable_number', '33972222713'
+        a.client.should.have.property 'remote_number', '19005551212'
+        a.client.should.have.property 'source', 'test3'
+        a.client.should.have.property 'source_id'
+        a.client.should.have.property 'rating'
+        a.client.should.have.property 'rating_table'
+        a.client.should.have.property 'connect_stamp'
+        a.client.should.have.property 'timezone'
+        a.client.should.have.property 'duration'
+        a.client.should.have.property 'client'
+        a.client.should.have.property 'prefix'
+        a.client.should.have.property 'configuration'
+        a.client.should.have.property 'currency', 'EUR'
+        a.client.should.have.property 'periods', 1
+        a.client.should.have.property 'integer_amount', 750
+        a.client.should.have.property 'amount'
+        a.client.should.have.property 'actual_amount'
+        a.client.should.have.property 'divider', 100
+        a.client.should.have.property 'subsequent'
+        a.client.subsequent.should.have.property 'cost', 1500
+        a.client.should.have.property '_id'
 
       it 'should rate client and carrier', seem ->
         r = new Rating {rating_tables,source:'test4'}
@@ -191,27 +195,29 @@
             rating:
               '2012-12-14': table:'carrier-A'
 
-        a.should.have.length 2
-        a[0].should.have.property 'billable_number', '33972222713'
-        a[0].should.have.property 'remote_number', '19005551212'
-        a[0].should.have.property 'source', 'test4'
-        a[0].should.have.property 'currency', 'EUR'
-        a[0].should.have.property 'periods', 1
-        a[0].should.have.property 'integer_amount', 750
-        a[0].should.have.property 'divider', 100
-        a[0].should.have.property 'subsequent'
-        a[0].subsequent.should.have.property 'cost', 1500
-        a[0].should.have.property '_id'
-        a[1].should.have.property 'billable_number', '33972222713'
-        a[1].should.have.property 'remote_number', '19005551212'
-        a[1].should.have.property 'source', 'test4'
-        a[1].should.have.property 'currency', 'EUR'
-        a[1].should.have.property 'periods', 23
-        a[1].should.have.property 'integer_amount', 131
-        a[1].should.have.property 'divider', 1000
-        a[1].should.have.property 'subsequent'
-        a[1].subsequent.should.have.property 'cost', 340
-        a[1].should.have.property '_id', '33972222713-2013-05-14T12:52:23-04:00-19005551212-23'
+        Object.keys(a).should.have.length 2
+        a.should.have.property 'client'
+        a.client.should.have.property 'billable_number', '33972222713'
+        a.client.should.have.property 'remote_number', '19005551212'
+        a.client.should.have.property 'source', 'test4'
+        a.client.should.have.property 'currency', 'EUR'
+        a.client.should.have.property 'periods', 1
+        a.client.should.have.property 'integer_amount', 750
+        a.client.should.have.property 'divider', 100
+        a.client.should.have.property 'subsequent'
+        a.client.subsequent.should.have.property 'cost', 1500
+        a.client.should.have.property '_id'
+        a.should.have.property 'carrier'
+        a.carrier.should.have.property 'billable_number', '33972222713'
+        a.carrier.should.have.property 'remote_number', '19005551212'
+        a.carrier.should.have.property 'source', 'test4'
+        a.carrier.should.have.property 'currency', 'EUR'
+        a.carrier.should.have.property 'periods', 23
+        a.carrier.should.have.property 'integer_amount', 131
+        a.carrier.should.have.property 'divider', 1000
+        a.carrier.should.have.property 'subsequent'
+        a.carrier.subsequent.should.have.property 'cost', 340
+        a.carrier.should.have.property '_id', '33972222713-2013-05-14T12:52:23-04:00-19005551212-23'
 
       it 'should rate destinations', seem ->
         r = new Rating {rating_tables,source:'test5'}
@@ -251,26 +257,28 @@
               '2012-12-14': table:'cheap-5'
         .catch (error) -> debug "rate #{error.stack ? error}"
 
-        a.should.have.length 1
-        a[0].should.have.property 'billable_number', '33972222713'
-        a[0].should.have.property 'remote_number', '18002255288'
-        a[0].should.have.property 'source', 'test5'
-        a[0].should.have.property 'source_id'
-        a[0].should.have.property 'rating'
-        a[0].should.have.property 'rating_table'
-        a[0].should.have.property 'connect_stamp'
-        a[0].should.have.property 'timezone'
-        a[0].should.have.property 'duration'
-        a[0].should.have.property 'carrier'
-        a[0].should.have.property 'prefix'
-        a[0].should.have.property 'configuration'
-        a[0].should.have.property 'destination', 'us-tollfree'
-        a[0].should.have.property 'currency', 'EUR'
-        a[0].should.have.property 'periods', 23
-        a[0].should.have.property 'integer_amount', 14
-        a[0].should.have.property 'amount'
-        a[0].should.have.property 'actual_amount'
-        a[0].should.have.property 'divider', 1000
-        a[0].should.have.property 'subsequent'
-        a[0].subsequent.should.have.property 'cost', 34
-        a[0].should.have.property '_id'
+        Object.keys(a).should.have.length 1
+        a.should.have.property 'carrier'
+        a.should.not.have.property 'client'
+        a.carrier.should.have.property 'billable_number', '33972222713'
+        a.carrier.should.have.property 'remote_number', '18002255288'
+        a.carrier.should.have.property 'source', 'test5'
+        a.carrier.should.have.property 'source_id'
+        a.carrier.should.have.property 'rating'
+        a.carrier.should.have.property 'rating_table'
+        a.carrier.should.have.property 'connect_stamp'
+        a.carrier.should.have.property 'timezone'
+        a.carrier.should.have.property 'duration'
+        a.carrier.should.have.property 'carrier'
+        a.carrier.should.have.property 'prefix'
+        a.carrier.should.have.property 'configuration'
+        a.carrier.should.have.property 'destination', 'us-tollfree'
+        a.carrier.should.have.property 'currency', 'EUR'
+        a.carrier.should.have.property 'periods', 23
+        a.carrier.should.have.property 'integer_amount', 14
+        a.carrier.should.have.property 'amount'
+        a.carrier.should.have.property 'actual_amount'
+        a.carrier.should.have.property 'divider', 1000
+        a.carrier.should.have.property 'subsequent'
+        a.carrier.subsequent.should.have.property 'cost', 34
+        a.carrier.should.have.property '_id'

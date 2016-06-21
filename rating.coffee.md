@@ -27,6 +27,48 @@ Data
 }
 ```
 
+    class Rated
+
+      constructor: ->
+
+      compute: (duration,ignore = 0) ->
+
+        @duration ?= duration if duration?
+
+assuming call was answered
+
+        return ignore unless @duration?
+
+        if @duration < ignore
+          @ignore = true
+          return
+
+        initial = @initial = @rating_data.initial
+        subsequent = @subsequent = @rating_data.subsequent
+
+        call_duration = @duration
+        if call_duration <= initial.duration
+          amount = initial.cost
+        else
+
+periods of s.duration duration
+
+          periods = Math.ceil (call_duration-initial.duration)/subsequent.duration
+          amount = initial.cost + (subsequent.cost/@configuration.per) * (periods*subsequent.duration)
+
+round-up integer
+
+        integer_amount = Math.ceil amount
+
+this is the actual value (expressed in configuration.currency)
+
+        actual_amount = integer_amount / @configuration.divider
+
+        @amount = amount
+        @periods = periods
+        @integer_amount = integer_amount
+        @actual_amount = actual_amount
+
     class Rating
 
       constructor: (@cfg) ->
@@ -35,42 +77,6 @@ Data
         assert @source, 'Missing source'
         @PouchDB = @cfg.rating_tables
         assert @PouchDB, 'Missing rating_tables object'
-
-      compute: (rated) ->
-
-assuming call was answered
-
-        unless rated.duration?
-          return rated
-
-        {rating_data} = rated
-
-        initial = rated.initial = rating_data.initial
-        subsequent = rated.subsequent = rating_data.subsequent
-
-        call_duration = rated.duration
-        if call_duration <= initial.duration
-          amount = initial.cost
-        else
-
-periods of s.duration duration
-
-          periods = Math.ceil (call_duration-initial.duration)/subsequent.duration
-          amount = initial.cost + (subsequent.cost/rated.configuration.per) * (periods*subsequent.duration)
-
-round-up integer
-
-        integer_amount = Math.ceil amount
-
-this is the actual value (expressed in configuration.currency)
-
-        actual_amount = integer_amount / rated.configuration.divider
-
-        rated.amount = amount
-        rated.periods = periods
-        rated.integer_amount = integer_amount
-        rated.actual_amount = actual_amount
-        rated
 
       rate: seem (o) ->
         return unless o.direction?
@@ -95,7 +101,7 @@ this is the actual value (expressed in configuration.currency)
           assert data.rating?
           assert data.timezone?
 
-          rated = {}
+          rated = new Rated()
 
           rated.duration = o.duration
 
@@ -145,9 +151,8 @@ this is the actual value (expressed in configuration.currency)
           assert rating_data.subsequent.duration?, "No subsequent duration for #{rating_data._id} in #{rating_db_name}"
 
           rated.rating_data = rating_data
-          # etc.
 
-          @compute rated
+          rated.compute()
 
           rated
 
@@ -179,21 +184,19 @@ Finalize record
 
 Prepare return value
 
-        r = []
-
-        push = (rated) ->
+        merge = (rated) ->
           return unless rated?
           w = {}
           for own k,v of o
             w[k] = v
           for own k,v of rated
             w[k] = v
-          r.push w
+          w
 
-        push client_rated
-        push carrier_rated
-
-        return r
+        r = {}
+        r.client = merge client_rated if client_rated?
+        r.carrier = merge carrier_rated if carrier_rated?
+        r
 
 Toolbox
 =======
