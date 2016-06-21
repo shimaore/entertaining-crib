@@ -4,6 +4,7 @@
   "description": "CDR rating for CCNQ",
   "main": "rating.js",
   "scripts": {
+    "coverage": "istanbul cover -x '*.js' node_modules/.bin/_mocha",
     "prepublish": "coffee -c *.coffee.md lib/*.coffee.md",
     "pretest": "npm install",
     "test": "mocha"
@@ -30,7 +31,9 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "coffee-coverage": "^1.0.1",
     "coffee-script": "^1.10.0",
+    "istanbul": "^0.4.4",
     "memdown": "^1.2.0",
     "mocha": "^2.5.3",
     "pouchdb": "^5.4.1"
