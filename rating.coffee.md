@@ -186,12 +186,9 @@ Prepare return value
 
         merge = (rated) ->
           return unless rated?
-          w = {}
           for own k,v of o
-            w[k] = v
-          for own k,v of rated
-            w[k] = v
-          w
+            rated[k] ?= v
+          rated
 
         r = {}
         r.client = merge client_rated if client_rated?
