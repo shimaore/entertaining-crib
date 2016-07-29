@@ -79,6 +79,7 @@ this is the actual value (expressed in configuration.currency)
         assert @PouchDB, 'Missing rating_tables object'
 
       rate: seem (o) ->
+        debug 'rate', o
         return unless o.direction?
         return unless o.from?
         return unless o.to?
@@ -98,8 +99,8 @@ this is the actual value (expressed in configuration.currency)
             throw new Error "invalid direction: #{o.direction}"
 
         rate_client_or_carrier = seem (data) =>
-          assert data.rating?
-          assert data.timezone?
+          assert data.rating?, 'Internal error: missing `data.rating`'
+          assert data.timezone?, 'Internal error: missing `data.timezone`'
 
           rated = new Rated()
 
@@ -116,6 +117,7 @@ this is the actual value (expressed in configuration.currency)
           rated.rating_table = [@table_prefix,rated.rating.table].join '-'
 
           rating_db_name = rated.rating_table
+          debug "rate_client_or_carrier: using rating_db_name #{rating_db_name}"
           rating_db = new @PouchDB rating_db_name
 
           try
@@ -143,12 +145,12 @@ this is the actual value (expressed in configuration.currency)
           rated.per = configuration.per ? 60
 
           assert rating_data?, "No rating data for #{o.remote_number} in #{rating_db_name}"
-          assert rating_data.initial?, "No initial for #{rating_data._id} in #{rating_db_name}"
-          assert rating_data.initial.cost?, "No initial cost for #{rating_data._id} in #{rating_db_name}"
-          assert rating_data.initial.duration?, "No initial duration for #{rating_data._id} in #{rating_db_name}"
-          assert rating_data.subsequent?, "No subsequent for #{rating_data._id} in #{rating_db_name}"
-          assert rating_data.subsequent.cost?, "No subsequent cost for #{rating_data._id} in #{rating_db_name}"
-          assert rating_data.subsequent.duration?, "No subsequent duration for #{rating_data._id} in #{rating_db_name}"
+          assert rating_data.initial?, "No `initial` for #{rating_data._id} in #{rating_db_name}"
+          assert rating_data.initial.cost?, "No `initial.cost` for #{rating_data._id} in #{rating_db_name}"
+          assert rating_data.initial.duration?, "No `initial.duration` for #{rating_data._id} in #{rating_db_name}"
+          assert rating_data.subsequent?, "No `subsequent` for #{rating_data._id} in #{rating_db_name}"
+          assert rating_data.subsequent.cost?, "No `subsequent.cost` for #{rating_data._id} in #{rating_db_name}"
+          assert rating_data.subsequent.duration?, "No `subsequent.duration` for #{rating_data._id} in #{rating_db_name}"
 
           rated.rating_data = rating_data
 
