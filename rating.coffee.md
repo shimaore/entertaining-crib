@@ -112,7 +112,7 @@ this is the actual value (expressed in configuration.currency)
           connect_stamp = moment.tz o.stamp, rated.timezone
           rated.connect_stamp = connect_stamp.format()
 
-          rated.rating = rating_of data.rating, connect_stamp, o.timezone
+          rated.rating = rating_of data.rating, connect_stamp, data.timezone
           rated.rating_table = [@table_prefix,rated.rating.table].join '-'
 
           rating_db_name = rated.rating_table
