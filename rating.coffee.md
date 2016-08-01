@@ -29,7 +29,16 @@ Data
 
     class Rated
 
-      constructor: ->
+      constructor: (data) ->
+        for own k,v of data
+          this[k] ?= v
+        @type = 'rated'
+
+      toJSON: ->
+        w = {}
+        for own k,v of this
+          w[k] = v
+        w
 
       compute: (duration,ignore = 0) ->
 
@@ -42,6 +51,13 @@ assuming call was answered
         if @duration < ignore
           @ignore = true
           return
+
+        @_id = [
+          @billable_number
+          @connect_stamp
+          @remote_number
+          @duration
+        ].join '-'
 
         initial = @initial = @rating_data.initial
         subsequent = @subsequent = @rating_data.subsequent
@@ -102,7 +118,7 @@ this is the actual value (expressed in configuration.currency)
           assert data.rating?, 'Internal error: missing `data.rating`'
           assert data.timezone?, 'Internal error: missing `data.timezone`'
 
-          rated = new Rated()
+          rated = new Rated o
 
           rated.duration = o.duration
 
@@ -176,25 +192,11 @@ Finalize record
 
         return [] unless client_rated? or carrier_rated?
 
-        o._id = [
-          o.billable_number
-          client_rated?.connect_stamp ? carrier_rated?.connect_stamp
-          o.remote_number
-          o.duration
-        ].join '-'
-        o.type = 'rated'
-
 Prepare return value
 
-        merge = (rated) ->
-          return unless rated?
-          for own k,v of o
-            rated[k] ?= v
-          rated
-
         r = {}
-        r.client = merge client_rated if client_rated?
-        r.carrier = merge carrier_rated if carrier_rated?
+        r.client = client_rated if client_rated?
+        r.carrier = carrier_rated if carrier_rated?
         r
 
 Toolbox
