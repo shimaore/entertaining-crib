@@ -180,17 +180,19 @@ Main handling
           debug 'Processing client', o.client
 
           client_rated = yield rate_client_or_carrier o.client
-          client_rated.side = 'client'
+            .catch (error) ->
+              debug "Client rating error: #{error.stack ? error}"
+              null
+          client_rated?.side = 'client'
 
         if o.carrier?
           debug 'Processing carrier', o.carrier
 
           carrier_rated = yield rate_client_or_carrier o.carrier
-          carrier_rated.side = 'carrier'
-
-Finalize record
-
-        return [] unless client_rated? or carrier_rated?
+            .catch (error) ->
+              debug "Carrier rating error: #{error.stack ? error}"
+              null
+          carrier_rated?.side = 'carrier'
 
 Prepare return value
 
