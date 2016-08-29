@@ -3,6 +3,10 @@ CDR rating for CCNQ
 
     seem = require 'seem'
 
+    check = (ok,args...) ->
+      return true if ok
+      debug args...
+
 Data
 ----
 
@@ -90,9 +94,11 @@ this is the actual value (expressed in configuration.currency)
       constructor: (@cfg) ->
         @table_prefix = @cfg.table_prefix ? 'rates'
         @source = @cfg.source
-        assert @source, 'Missing source'
         @PouchDB = @cfg.rating_tables
-        assert @PouchDB, 'Missing rating_tables object'
+        unless @source?
+          debug 'Missing source'
+        unless @PouchDB?
+          debug 'Missing rating_tables object'
 
       rate: seem (o) ->
         debug 'rate', o
@@ -115,8 +121,8 @@ this is the actual value (expressed in configuration.currency)
             throw new Error "invalid direction: #{o.direction}"
 
         rate_client_or_carrier = seem (data) =>
-          assert data.rating?, 'Internal error: missing `data.rating`'
-          assert data.timezone?, 'Internal error: missing `data.timezone`'
+          return null unless check data.rating?, 'Internal error: missing `data.rating`', data
+          return null unless check data.timezone?, 'Internal error: missing `data.timezone`'
 
           rated = new Rated o
 
@@ -153,20 +159,20 @@ this is the actual value (expressed in configuration.currency)
 
           rating_db = null
 
-          assert configuration?.currency?, "No currency in configuration of #{rating_db_name}"
+          return null unless check configuration?.currency?, "No currency in configuration of #{rating_db_name}"
 
           rated.configuration = configuration
           rated.currency = configuration.currency
           rated.divider = configuration.divider ? 1
           rated.per = configuration.per ? 60
 
-          assert rating_data?, "No rating data for #{o.remote_number} in #{rating_db_name}"
-          assert rating_data.initial?, "No `initial` for #{rating_data._id} in #{rating_db_name}"
-          assert rating_data.initial.cost?, "No `initial.cost` for #{rating_data._id} in #{rating_db_name}"
-          assert rating_data.initial.duration?, "No `initial.duration` for #{rating_data._id} in #{rating_db_name}"
-          assert rating_data.subsequent?, "No `subsequent` for #{rating_data._id} in #{rating_db_name}"
-          assert rating_data.subsequent.cost?, "No `subsequent.cost` for #{rating_data._id} in #{rating_db_name}"
-          assert rating_data.subsequent.duration?, "No `subsequent.duration` for #{rating_data._id} in #{rating_db_name}"
+          return null unless check rating_data?, "No rating data for #{o.remote_number} in #{rating_db_name}"
+          return null unless check rating_data.initial?, "No `initial` for #{rating_data._id} in #{rating_db_name}"
+          return null unless check rating_data.initial.cost?, "No `initial.cost` for #{rating_data._id} in #{rating_db_name}"
+          return null unless check rating_data.initial.duration?, "No `initial.duration` for #{rating_data._id} in #{rating_db_name}"
+          return null unless check rating_data.subsequent?, "No `subsequent` for #{rating_data._id} in #{rating_db_name}"
+          return null unless check rating_data.subsequent.cost?, "No `subsequent.cost` for #{rating_data._id} in #{rating_db_name}"
+          return null unless check rating_data.subsequent.duration?, "No `subsequent.duration` for #{rating_data._id} in #{rating_db_name}"
 
           rated.rating_data = rating_data
 
@@ -180,18 +186,12 @@ Main handling
           debug 'Processing client', o.client
 
           client_rated = yield rate_client_or_carrier o.client
-            .catch (error) ->
-              debug "Client rating error: #{error.stack ? error}"
-              null
           client_rated?.side = 'client'
 
         if o.carrier?
           debug 'Processing carrier', o.carrier
 
           carrier_rated = yield rate_client_or_carrier o.carrier
-            .catch (error) ->
-              debug "Carrier rating error: #{error.stack ? error}"
-              null
           carrier_rated?.side = 'carrier'
 
 Prepare return value
@@ -211,6 +211,5 @@ Toolbox
     rating_of = require './lib/rating_of'
     find_prefix_in = require './lib/find_prefix_in'
     moment = require 'moment-timezone'
-    assert = require 'assert'
     pkg = require './package'
     debug = (require 'debug') "#{pkg.name}:rating"
