@@ -11,11 +11,11 @@ Data
 ----
 
 * doc.endpoint.timezone Billing timezone
-* doc.endpoint.ratings{} for each `start-date` expressed as `YYYY-MM-DD`, provides a record
-* doc.endpoint.ratings[start-date].table the name of the rating table
+* doc.endpoint.rating{} for each `start-date` expressed as `YYYY-MM-DD`, provides a record
+* doc.endpoint.rating[start-date].table the name of the rating table
 * doc.carrier.timezone Billing timezone
-* doc.carrier.ratings{} for each `start-date` expressed as `YYYY-MM-DD`, provides a record
-* doc.carrier.ratings[start-date].table the name of the rating table
+* doc.carrier.rating{} for each `start-date` expressed as `YYYY-MM-DD`, provides a record
+* doc.carrier.rating[start-date].table the name of the rating table
 
 ```json
 {
@@ -91,6 +91,10 @@ this is the actual value (expressed in configuration.currency)
 
     class Rating
 
+* cfg.table_prefix (string) The prefix used to build the names of rating tables. Default: `rates`
+* cfg.rating_tables ignore
+* cfg.source ignore
+
       constructor: (@cfg) ->
         @table_prefix = @cfg.table_prefix ? 'rates'
         @source = @cfg.source
@@ -148,6 +152,8 @@ this is the actual value (expressed in configuration.currency)
             rating_data = yield find_prefix_in o.remote_number, rating_db
             rated.prefix = rating_data.prefix
 
+* doc.prefix.destination (rating)(string) The doc.destination used for rating.
+
             if rating_data?.destination?
               rated.destination = rating_data.destination
               rating_data = yield rating_db
@@ -161,10 +167,24 @@ this is the actual value (expressed in configuration.currency)
 
           return null unless check configuration?.currency?, "No currency in configuration of #{rating_db_name}"
 
+* doc.configuration (rating)
+* doc.configuration.currency (rating)(string) Currency for this rating db.
+* doc.configuration.divider (rating)(integer) Divider for values in the `cost` fields. Default: 1, meaning the values are used as-is.
+* doc.configuration.per (rating)(integer) Number of seconds `cost` fields are expressed for. Default: 60, meaning the rates are expressed per-minute.
+
           rated.configuration = configuration
           rated.currency = configuration.currency
           rated.divider = configuration.divider ? 1
           rated.per = configuration.per ? 60
+
+* doc.prefix.initial.cost (rating)(integer) Cost for the initial call connexion, expressed for a doc.configuration.per seconds period, multiplied by doc.configuration.divider.
+* doc.destination.initial.cost (rating)(integer) Cost for the initial call connexion, expressed for a doc.configuration.per seconds period, multiplied by doc.configuration.divider.
+* doc.prefix.initial.duration (rating)(integer) Duration of the initial call connexion period.
+* doc.destination.initial.duration (rating)(integer) Duration of the initial call connexion period.
+* doc.prefix.subsequent.cost (rating)(integer) Cost for in-call time intervals, expressed for a doc.configuration.per seconds period, multiplied by doc.configuration.divider.
+* doc.destination.subsequent.cost (rating)(integer) Cost for in-call time intervals, expressed for a doc.configuration.per seconds period, multiplied by doc.configuration.divider.
+* doc.prefix.subsequent.duration (rating)(integer) Duration of in-call time intervals.
+* doc.destination.subsequent.duration (rating)(integer) Duration of in-call time intervals.
 
           return null unless check rating_data?, "No rating data for #{o.remote_number} in #{rating_db_name}"
           return null unless check rating_data.initial?, "No `initial` for #{rating_data._id} in #{rating_db_name}"
