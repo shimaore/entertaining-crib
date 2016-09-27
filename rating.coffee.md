@@ -10,9 +10,9 @@ CDR rating for CCNQ
 Data
 ----
 
-* doc.endpoint.timezone Billing timezone
-* doc.endpoint.rating{} for each `start-date` expressed as `YYYY-MM-DD`, provides a record
-* doc.endpoint.rating[start-date].table the name of the rating table
+* doc.src_endpoint.timezone Billing timezone
+* doc.src_endpoint.rating{} for each `start-date` expressed as `YYYY-MM-DD`, provides a record
+* doc.src_endpoint.rating[start-date].table the name of the rating table
 * doc.carrier.timezone Billing timezone
 * doc.carrier.rating{} for each `start-date` expressed as `YYYY-MM-DD`, provides a record
 * doc.carrier.rating[start-date].table the name of the rating table
