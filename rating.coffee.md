@@ -74,7 +74,7 @@ assuming call was answered
 periods of s.duration duration
 
           periods = Math.ceil (call_duration-initial.duration)/subsequent.duration
-          amount = initial.cost + (subsequent.cost/@configuration.per) * (periods*subsequent.duration)
+          amount = initial.cost + (subsequent.cost/@per) * (periods*subsequent.duration)
 
 round-up integer
 
@@ -82,7 +82,7 @@ round-up integer
 
 this is the actual value (expressed in configuration.currency)
 
-        actual_amount = integer_amount / @configuration.divider
+        actual_amount = integer_amount / @divider
 
         @amount = amount
         @periods = periods
