@@ -44,11 +44,11 @@ We add two fields, `timezone` and `rating`, in all `endpoint` records:
       "rating": {
         "{start-date}": {
             "table": "{tarif}"
-            "forfait": "{forfait}"
+            "plan": "{forfait}"
         },
         "{start-date}": {
             "table": "{tarif}"
-            "forfait": "{forfait}"
+            "plan": "{forfait}"
         }
       },
 
@@ -57,7 +57,7 @@ We add two fields, `timezone` and `rating`, in all `endpoint` records:
 - `{timezone}`: billing timezone
 - `{start-date}`: `YYYY-MM-DD` (sorted alpha-numerically)
 - `{tarif}`: used in rating
-- `{forfait}`: used in aggregation
+- `{plan}`: used in aggregation
 
 
 Rating tables
