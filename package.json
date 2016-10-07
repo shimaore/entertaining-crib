@@ -1,6 +1,6 @@
 {
   "name": "entertaining-crib",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "description": "CDR rating for CCNQ",
   "main": "rating.js",
   "scripts": {
