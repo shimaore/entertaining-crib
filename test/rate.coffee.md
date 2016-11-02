@@ -30,6 +30,7 @@
           currency: 'EUR'
           divider: 1000
           per: 60
+          ready: true
         yield cheap.put
           _id:'prefix:1800'
           country: 'us'
@@ -89,6 +90,7 @@
           currency: 'EUR'
           divider: 100
           per: 60
+          ready: true
         yield expensive.put
           _id:'prefix:1900'
           country: 'us'
@@ -147,6 +149,7 @@
           currency: 'EUR'
           divider: 100
           per: 60
+          ready: true
         yield expensive.put
           _id:'prefix:1900'
           country: 'us'
@@ -165,6 +168,7 @@
           currency: 'EUR'
           divider: 1000
           per: 60
+          ready: true
         yield cheap.put
           _id:'prefix:1900'
           country: 'us'
@@ -227,6 +231,7 @@
           currency: 'EUR'
           divider: 1000
           per: 60
+          ready: true
         yield cheap.put
           _id:'prefix:1800'
           destination: 'us-tollfree'

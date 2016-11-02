@@ -111,10 +111,13 @@ Data
 
           return null unless check configuration?.currency?, "No currency in configuration of #{rating_db_name}"
 
+          return null unless check configuration?.ready, "Table #{rating_db_name} is not ready."
+
 * doc.configuration (rating)
 * doc.configuration.currency (rating)(string) Currency for this rating db.
 * doc.configuration.divider (rating)(integer) Divider for values in the `cost` fields. Default: 1, meaning the values are used as-is.
 * doc.configuration.per (rating)(integer) Number of seconds `cost` fields are expressed for. Default: 60, meaning the rates are expressed per-minute.
+* doc.configuration.ready (rating)(boolean) If `false`, the rating table may be edited, but is not ready yet for use in production as a tariff; if `true`, the rating table may no longer be edited, but is useable in production as a tariff.
 
           rated.configuration = configuration
           rated.currency = configuration.currency

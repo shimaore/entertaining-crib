@@ -96,6 +96,8 @@ One single record per rating database:
     , "currency": "EUR"
     , "divider": 1000
     , "per": 60
+
+    , "ready": false
     }
 
 
@@ -103,6 +105,7 @@ One single record per rating database:
 - `per`: duration used for tariffs, defaults to 60 meaning all prices are expressed as "per minute" (even though computations use the `time` parameters, for example "per second starting with the first second").
 - `currency`: invoicing currency
 - `name`: names of the rating table in different locales.
+- `ready`: if false, the rating table can still be edited, but not used as a tariff; if true, the rating table can no longer be edited, but it may be used as a tariff.
 
 The `configuration` record is copied in the rated CDR in the field `configuration`.
 
