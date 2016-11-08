@@ -258,17 +258,6 @@ Format of a rated CDR:
       "actual_amount"
     }
 
-Target database
----------------
-
-Note that the storing code is located in module `astonishing-competition`, not in the rating modules.
-
-- `{period}` name is algorithmic; by default = `YYYY-MM` based on local time
-
-Carrier-side: `rated-{carrier}-{period}`
-
-Client-side: `rated-{client}-{period}`
-
 Source code
 -----------
 
@@ -278,6 +267,17 @@ What does the `aggregation` code
 ================================
 
 The aggregation code in `astonishing-competition` uses the database-driven `flat-ornament` code execution module to convert a rated CDR into an invoicing CDR.
+
+Target database
+---------------
+
+Note that the storing code is located in module `astonishing-competition`, not in the rating modules.
+
+- `{period}` name is algorithmic; by default = `YYYY-MM` based on local time
+
+Carrier-side: `cdr-{carrier}-{period}`
+
+Client-side: `cdr-{client}-{period}`
 
 Source
 ------
