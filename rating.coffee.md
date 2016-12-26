@@ -3,9 +3,12 @@ CDR rating for CCNQ
 
     seem = require 'seem'
 
+    report = (text,values...) ->
+      debug "Error: #{text}", values...
+
     check = (ok,args...) ->
       return true if ok
-      debug args...
+      report args...
 
 Data
 ----
@@ -44,9 +47,9 @@ Data
         @source = @cfg.source
         @PouchDB = @cfg.rating_tables
         unless @source?
-          debug 'Missing source'
+          report 'Missing source'
         unless @PouchDB?
-          debug 'Missing rating_tables object'
+          report 'Missing rating_tables object'
 
       rate: seem (o) ->
         debug 'rate', o
@@ -66,19 +69,19 @@ Data
             o.billable_number = o.from
             o.remote_number = o.to
           else
-            throw new Error "invalid direction: #{o.direction}"
+            report 'Invalid direction', o.direction
+            return
 
         rate_client_or_carrier = seem (data) =>
-          return null unless check data.rating?, 'Internal error: missing `data.rating`', data
-          return null unless check data.timezone?, 'Internal error: missing `data.timezone`'
+          return null unless check data.rating?, 'Missing `data.rating`', data
+          return null unless check data.timezone?, 'Missing `data.timezone`'
 
           rated = new Rated o
 
           rated.duration = o.duration
 
           rated.timezone = data.timezone
-          unless rated.timezone?
-            throw new Error 'No timezone found'
+          return null unless check rated.timezone?, 'Missing `data.timezone`', data
 
           connect_stamp = moment.tz o.stamp, rated.timezone
           rated.connect_stamp = connect_stamp.format()
@@ -103,7 +106,7 @@ Data
               rating_data = yield rating_db
                 .get "destination:#{rating_data.destination}"
           catch error
-            debug "rate_client_or_carrier: #{error.stack ? error}"
+            report "rate_client_or_carrier: #{error.stack ? error}"
           finally
             close_pouch rating_db
 
