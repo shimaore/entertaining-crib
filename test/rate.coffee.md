@@ -1,6 +1,6 @@
     seem = require 'seem'
     pkg = require '../package'
-    debug = (require 'debug') "#{pkg.name}:test:rate"
+    debug = (require 'tangible') "#{pkg.name}:test:rate"
     {expect} = chai = require 'chai'
     chai.should()
     PouchDB = (require 'pouchdb').defaults db: require 'memdown'

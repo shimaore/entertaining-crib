@@ -182,4 +182,4 @@ Toolbox
     find_prefix_in = require './lib/find_prefix_in'
     moment = require 'moment-timezone'
     pkg = require './package'
-    debug = (require 'debug') "#{pkg.name}:rating"
+    debug = (require 'tangible') "#{pkg.name}:rating"
