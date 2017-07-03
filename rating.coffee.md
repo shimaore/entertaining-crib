@@ -45,10 +45,10 @@ Data
       constructor: (@cfg) ->
         @table_prefix = @cfg.table_prefix ? 'rates'
         @source = @cfg.source
-        @PouchDB = @cfg.rating_tables
+        @rating_tables = @cfg.rating_tables
         unless @source?
           report 'Missing source'
-        unless @PouchDB?
+        unless @rating_tables?
           report 'Missing rating_tables object'
 
       rate: seem (o) ->
@@ -91,7 +91,7 @@ Data
 
           rating_db_name = rated.rating_table
           debug "rate_client_or_carrier: using rating_db_name #{rating_db_name}"
-          rating_db = new @PouchDB rating_db_name
+          rating_db = @rating_tables rating_db_name
 
           try
             configuration = yield rating_db.get 'configuration'

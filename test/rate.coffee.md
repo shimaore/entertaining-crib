@@ -7,7 +7,7 @@
 
     describe 'Rating', ->
       Rating = require '../rating'
-      rating_tables = PouchDB
+      rating_tables = (name) -> PouchDB name
 
       it 'should not rate unless client or carrier are specified', seem ->
         r = new Rating {rating_tables,source:'test1'}
@@ -24,7 +24,7 @@
 
       it 'should rate carrier', seem ->
         r = new Rating {rating_tables,source:'test2'}
-        cheap = new rating_tables 'rates-cheap'
+        cheap = rating_tables 'rates-cheap'
         yield cheap.put
           _id:'configuration'
           currency: 'EUR'
@@ -84,7 +84,7 @@
 
       it 'should rate client', seem ->
         r = new Rating {rating_tables,source:'test3'}
-        expensive = new rating_tables 'rates-expensive'
+        expensive = rating_tables 'rates-expensive'
         yield expensive.put
           _id:'configuration'
           currency: 'EUR'
@@ -143,7 +143,7 @@
 
       it 'should rate client and carrier', seem ->
         r = new Rating {rating_tables,source:'test4'}
-        expensive = new rating_tables 'rates-client-2'
+        expensive = rating_tables 'rates-client-2'
         yield expensive.put
           _id:'configuration'
           currency: 'EUR'
@@ -162,7 +162,7 @@
           subsequent:
             cost: 1500
             duration: 30
-        cheap = new rating_tables 'rates-carrier-A'
+        cheap = rating_tables 'rates-carrier-A'
         yield cheap.put
           _id:'configuration'
           currency: 'EUR'
@@ -225,7 +225,7 @@
 
       it 'should rate destinations', seem ->
         r = new Rating {rating_tables,source:'test5'}
-        cheap = new rating_tables 'rates-cheap-5'
+        cheap = rating_tables 'rates-cheap-5'
         yield cheap.put
           _id:'configuration'
           currency: 'EUR'
