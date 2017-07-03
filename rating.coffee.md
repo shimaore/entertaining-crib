@@ -107,8 +107,6 @@ Data
                 .get "destination:#{rating_data.destination}"
           catch error
             report "rate_client_or_carrier: #{error.stack ? error}"
-          finally
-            close_pouch rating_db
 
           rating_db = null
 
@@ -173,8 +171,6 @@ Prepare return value
 
 Toolbox
 =======
-
-    close_pouch = require './close_pouch'
 
     module.exports = Rating
 
