@@ -3,7 +3,9 @@
     debug = (require 'tangible') "#{pkg.name}:test:rate"
     {expect} = chai = require 'chai'
     chai.should()
-    PouchDB = (require 'pouchdb').defaults db: require 'memdown'
+    PouchDB = require 'pouchdb-core'
+      .plugin require 'pouchdb-adapter-memory'
+      .defaults adapter:'memory'
 
     describe 'Rating', ->
       Rating = require '../rating'
