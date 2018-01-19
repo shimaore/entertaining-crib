@@ -5,7 +5,8 @@
   "main": "rating.js",
   "scripts": {
     "coverage": "istanbul cover -x '*.js' node_modules/.bin/_mocha",
-    "prepublish": "coffee -c *.coffee.md lib/*.coffee.md",
+    "prepublishOnly": "npm run build",
+    "build": "npm install --only=dev && rm package-lock.json && coffee -c *.coffee.md lib/*.coffee.md",
     "pretest": "npm install",
     "test": "mocha"
   },
