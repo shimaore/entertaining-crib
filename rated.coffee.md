@@ -3,10 +3,14 @@ CDR rating for CCNQ
 
     module.exports = class Rated
 
+The constructor will make a copy of the data.
+
       constructor: (data) ->
         for own k,v of data
           this[k] ?= v
         @type = 'rated'
+
+`toJSON` will return a copy of the data.
 
       toJSON: ->
         w = {}
@@ -14,17 +18,26 @@ CDR rating for CCNQ
           w[k] = v
         w
 
+      assert: (name) ->
+        unless this[name]
+          throw new Error "Missing #{name}", this
+
       compute: (duration,ignore = 0) ->
 
         @duration ?= duration if duration?
 
-assuming call was answered
+assuming call was answered (but no duration recorded yet)
 
-        return ignore unless @duration?
+        unless @duration?
+          return
 
         if @duration < ignore
           @ignore = true
           return
+
+        @assert 'billable_number'
+        @assert 'connect_stamp'
+        @assert 'remote_number'
 
         @_id = [
           @billable_number
@@ -32,6 +45,10 @@ assuming call was answered
           @remote_number
           @duration
         ].join '-'
+
+        @assert 'rating_data'
+        @assert 'per'
+        @assert 'divider'
 
         initial = @initial = @rating_data.initial
         subsequent = @subsequent = @rating_data.subsequent
@@ -58,3 +75,4 @@ this is the actual value (expressed in configuration.currency)
         @periods = periods
         @integer_amount = integer_amount
         @actual_amount = actual_amount
+        return
