@@ -7,8 +7,6 @@ CDR rating for CCNQ
         for own k,v of data
           this[k] ?= v
         @type = 'rated'
-        @per = 60
-        @divider = 1
 
       toJSON: ->
         w = {}
