@@ -1,8 +1,6 @@
 CDR rating for CCNQ
 ===================
 
-    seem = require 'seem'
-
     report = (text,values...) ->
       debug "Error: #{text}", values...
 
@@ -51,7 +49,7 @@ Data
         unless @rating_tables?
           report 'Missing rating_tables object'
 
-      rate: seem (o) ->
+      rate: (o) ->
         debug 'rate', o
         return unless o.direction?
         return unless o.from?
@@ -72,7 +70,7 @@ Data
             report 'Invalid direction', o.direction
             return
 
-        rate_client_or_carrier = seem (data) =>
+        rate_client_or_carrier = (data) =>
           return null unless check data.rating?, 'Missing `data.rating`', data
           return null unless check data.timezone?, 'Missing `data.timezone`'
 
@@ -94,16 +92,16 @@ Data
           rating_db = @rating_tables rating_db_name
 
           try
-            configuration = yield rating_db.get 'configuration'
+            configuration = await rating_db.get 'configuration'
 
-            rating_data = yield find_prefix_in o.remote_number, rating_db
+            rating_data = await find_prefix_in o.remote_number, rating_db
             rated.prefix = rating_data.prefix
 
 * doc.prefix.destination (rating)(string) The doc.destination used for rating.
 
             if rating_data?.destination?
               rated.destination = rating_data.destination
-              rating_data = yield rating_db
+              rating_data = await rating_db
                 .get "destination:#{rating_data.destination}"
           catch error
             report "rate_client_or_carrier: #{error.stack ? error}"
@@ -153,13 +151,13 @@ Main handling
         if o.client?
           debug 'Processing client', o.client
 
-          client_rated = yield rate_client_or_carrier o.client
+          client_rated = await rate_client_or_carrier o.client
           client_rated?.side = 'client'
 
         if o.carrier?
           debug 'Processing carrier', o.carrier
 
-          carrier_rated = yield rate_client_or_carrier o.carrier
+          carrier_rated = await rate_client_or_carrier o.carrier
           carrier_rated?.side = 'carrier'
 
 Prepare return value
