@@ -13,10 +13,7 @@ The constructor will make a copy of the data.
 `toJSON` will return a copy of the data.
 
       toJSON: ->
-        w = {}
-        for own k,v of this
-          w[k] = v
-        w
+        Object.assign {}, this
 
       assert: (name) ->
         unless this[name]
