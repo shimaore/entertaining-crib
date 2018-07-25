@@ -104,7 +104,7 @@ Data
               rating_data = await rating_db
                 .get "destination:#{rating_data.destination}"
           catch error
-            report "rate_client_or_carrier: #{error.stack ? error}"
+            report "rate_client_or_carrier: #{rating_db_name} #{error.stack ? JSON.stringify error}"
 
           rating_db = null
 
