@@ -1,6 +1,11 @@
 CDR rating for CCNQ
 ===================
 
+    Base = require 'base-p'
+    base62 = new Base 62
+
+    Moment = require 'moment-timezone'
+
     module.exports = class Rated
 
 The constructor will make a copy of the data.
@@ -38,10 +43,11 @@ assuming call was answered (but no duration recorded yet)
 
         @_id = [
           @billable_number
-          @connect_stamp
+          Moment(@connect_stamp).format 'X'
           @remote_number
           @duration
-        ].join '-'
+        ].join ''
+        @_id = base62.encodeBig BigInt @_id if @_id.match /^\d+/
 
         @assert 'rating_data'
         @assert 'per'
