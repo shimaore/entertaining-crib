@@ -223,7 +223,7 @@
         a.carrier.should.have.property 'divider', 1000
         a.carrier.should.have.property 'subsequent'
         a.carrier.subsequent.should.have.property 'cost', 340
-        a.carrier.should.have.property '_id', '33972222713-2013-05-14T12:52:23-04:00-19005551212-23'
+        a.carrier.should.have.property '_id', 'b55z21-O5phll2-KkDM4a-N' # '33972222713-2013-05-14T12:52:23-04:00-19005551212-23'
 
       it 'should rate destinations', seem ->
         r = new Rating {rating_tables,source:'test5'}

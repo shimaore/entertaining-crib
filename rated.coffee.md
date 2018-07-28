@@ -41,13 +41,14 @@ assuming call was answered (but no duration recorded yet)
         @assert 'connect_stamp'
         @assert 'remote_number'
 
+        short = (t) -> if t.match /^\d+$/ then base62.encodeBig BigInt t else t
+
         @_id = [
-          @billable_number
-          Moment(@connect_stamp).format 'X'
-          @remote_number
-          @duration
-        ].join ''
-        @_id = base62.encodeBig BigInt @_id if @_id.match /^\d+/
+          short @billable_number
+          base62.encode Moment(@connect_stamp).valueOf()
+          short @remote_number
+          base62.encode @duration
+        ].join '-'
 
         @assert 'rating_data'
         @assert 'per'
