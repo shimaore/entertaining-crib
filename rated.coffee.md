@@ -10,9 +10,9 @@ The constructor will make a copy of the data.
           this[k] ?= v
         @type = 'rated'
 
-`toJSON` will return a copy of the data.
+`toJS` will return a copy of the data.
 
-      toJSON: ->
+      toJS: ->
         Object.assign {}, this
 
       assert: (name) ->
