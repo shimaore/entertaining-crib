@@ -12,7 +12,6 @@
         .filter ({doc}) -> doc?
         .take 1
         .observe ({doc}) ->
-          console.log 'find...', doc
           result = doc
       result
 
