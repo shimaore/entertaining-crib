@@ -9,9 +9,9 @@ Select the last rating period that encloses the call-stamp
           key: t
           value: moment.tz(t,timezone)
         .sort (a,b) ->
-          if a.value.isBefore b
+          if a.value.isBefore b.value
             return -1
-          if a.value.isAfter b
+          if a.value.isAfter b.value
             return 1
           return 0
         .reverse()
