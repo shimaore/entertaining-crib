@@ -1,12 +1,9 @@
 CDR rating for CCNQ
 ===================
 
-    report = (text,values...) ->
-      debug "Error: #{text}", values...
-
-    check = (ok,args...) ->
+    check = (ok,text,values...) ->
       return true if ok
-      report args...
+      debug.dev "Error: #{text}", values...
 
 Data
 ----
@@ -45,9 +42,9 @@ Data
         @source = @cfg.source
         @rating_tables = @cfg.rating_tables
         unless @source?
-          report 'Missing source'
+          debug.dev 'Missing source'
         unless @rating_tables?
-          report 'Missing rating_tables object'
+          debug.dev 'Missing rating_tables object'
 
       rate: (o) ->
         debug 'rate', o
@@ -67,19 +64,18 @@ Data
             o.billable_number = o.from
             o.remote_number = o.to
           else
-            report 'Invalid direction', o.direction
+            debug.dev 'Invalid direction', o.direction
             return
 
         rate_client_or_carrier = (data) =>
           return null unless check data.rating?, 'Missing `data.rating`', data
-          return null unless check data.timezone?, 'Missing `data.timezone`'
+          return null unless check data.timezone?, 'Missing `data.timezone`', data
 
           rated = new Rated o
 
           rated.duration = o.duration
 
           rated.timezone = data.timezone
-          return null unless check rated.timezone?, 'Missing `data.timezone`', data
 
           connect_stamp = moment.tz o.stamp, rated.timezone
           rated.connect_stamp = connect_stamp.format()
@@ -104,7 +100,7 @@ Data
               rating_data = await rating_db
                 .get "destination:#{rating_data.destination}"
           catch error
-            report "rate_client_or_carrier: #{rating_db_name} #{error.stack ? JSON.stringify error}"
+            debug.dev "rate_client_or_carrier: #{rating_db_name} #{error.stack ? JSON.stringify error}"
 
           rating_db = null
 
