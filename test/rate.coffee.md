@@ -1,20 +1,18 @@
-    seem = require 'seem'
     pkg = require '../package'
     debug = (require 'tangible') "#{pkg.name}:test:rate"
     {expect} = chai = require 'chai'
     chai.should()
-    PouchDB = require 'pouchdb-core'
-      .plugin require 'pouchdb-adapter-memory'
-      .defaults adapter:'memory'
+    CouchDB = require 'most-couchdb'
+    prefix = 'http://admin:password@couchdb:5984'
 
     describe 'Rating', ->
       Rating = require '../rating'
-      rating_tables = (name) -> PouchDB name
+      rating_tables = (name) -> new CouchDB prefix+'/rates-'+name
 
-      it 'should not rate unless client or carrier are specified', seem ->
+      it 'should not rate unless client or carrier are specified', ->
         r = new Rating {rating_tables,source:'test1'}
 
-        a = yield r.rate
+        a = await r.rate
           direction: 'egress'
           from: '33972222713'
           to: '18002255288'
@@ -24,16 +22,18 @@
 
         Object.keys(a).should.have.length 0
 
-      it 'should rate carrier', seem ->
+      it 'should rate carrier', ->
         r = new Rating {rating_tables,source:'test2'}
-        cheap = rating_tables 'rates-cheap'
-        yield cheap.put
+        cheap = rating_tables 'cheap'
+        after -> cheap.destroy()
+        await cheap.create()
+        await cheap.put
           _id:'configuration'
           currency: 'EUR'
           divider: 1000
           per: 60
           ready: true
-        yield cheap.put
+        await cheap.put
           _id:'prefix:1800'
           country: 'us'
           description: {
@@ -46,7 +46,7 @@
             cost: 34
             duration: 1
 
-        a = yield r.rate
+        a = await r.rate
           direction: 'egress'
           from: '33972222713'
           to: '18002255288'
@@ -67,7 +67,6 @@
         a.carrier.should.have.property 'source', 'test2'
         a.carrier.should.have.property 'source_id'
         a.carrier.should.have.property 'rating'
-        a.carrier.should.have.property 'rating_table'
         a.carrier.should.have.property 'connect_stamp'
         a.carrier.should.have.property 'timezone'
         a.carrier.should.have.property 'duration'
@@ -84,16 +83,18 @@
         a.carrier.subsequent.should.have.property 'cost', 34
         a.carrier.should.have.property '_id'
 
-      it 'should rate client', seem ->
+      it 'should rate client', ->
         r = new Rating {rating_tables,source:'test3'}
-        expensive = rating_tables 'rates-expensive'
-        yield expensive.put
+        expensive = rating_tables 'expensive'
+        after -> expensive.destroy()
+        await expensive.create()
+        await expensive.put
           _id:'configuration'
           currency: 'EUR'
           divider: 100
           per: 60
           ready: true
-        yield expensive.put
+        await expensive.put
           _id:'prefix:1900'
           country: 'us'
           description: {
@@ -106,7 +107,7 @@
             cost: 1500
             duration: 30
 
-        a = yield r.rate
+        a = await r.rate
           direction: 'egress'
           from: '33972222713'
           to: '19005551212'
@@ -126,7 +127,6 @@
         a.client.should.have.property 'source', 'test3'
         a.client.should.have.property 'source_id'
         a.client.should.have.property 'rating'
-        a.client.should.have.property 'rating_table'
         a.client.should.have.property 'connect_stamp'
         a.client.should.have.property 'timezone'
         a.client.should.have.property 'duration'
@@ -143,16 +143,18 @@
         a.client.subsequent.should.have.property 'cost', 1500
         a.client.should.have.property '_id'
 
-      it 'should rate client and carrier', seem ->
+      it 'should rate client and carrier', ->
         r = new Rating {rating_tables,source:'test4'}
-        expensive = rating_tables 'rates-client-2'
-        yield expensive.put
+        expensive = rating_tables 'client-2'
+        after -> expensive.destroy()
+        await expensive.create()
+        await expensive.put
           _id:'configuration'
           currency: 'EUR'
           divider: 100
           per: 60
           ready: true
-        yield expensive.put
+        await expensive.put
           _id:'prefix:1900'
           country: 'us'
           description: {
@@ -164,14 +166,16 @@
           subsequent:
             cost: 1500
             duration: 30
-        cheap = rating_tables 'rates-carrier-A'
-        yield cheap.put
+        cheap = rating_tables 'carrier-a'
+        after -> cheap.destroy()
+        await cheap.create()
+        await cheap.put
           _id:'configuration'
           currency: 'EUR'
           divider: 1000
           per: 60
           ready: true
-        yield cheap.put
+        await cheap.put
           _id:'prefix:1900'
           country: 'us'
           description: {
@@ -185,7 +189,7 @@
             duration: 1
 
 
-        a = yield r.rate
+        a = await r.rate
           direction: 'egress'
           from: '33972222713'
           to: '19005551212'
@@ -199,7 +203,7 @@
           carrier:
             timezone: 'America/New_York'
             rating:
-              '2012-12-14': table:'carrier-A'
+              '2012-12-14': table:'carrier-a'
 
         Object.keys(a).should.have.length 2
         a.should.have.property 'client'
@@ -225,19 +229,21 @@
         a.carrier.subsequent.should.have.property 'cost', 340
         a.carrier.should.have.property '_id', 'b55z21-O5phll2-KkDM4a-N' # '33972222713-2013-05-14T12:52:23-04:00-19005551212-23'
 
-      it 'should rate destinations', seem ->
+      it 'should rate destinations', ->
         r = new Rating {rating_tables,source:'test5'}
-        cheap = rating_tables 'rates-cheap-5'
-        yield cheap.put
+        cheap = rating_tables 'cheap-5'
+        after -> cheap.destroy()
+        await cheap.create()
+        await cheap.put
           _id:'configuration'
           currency: 'EUR'
           divider: 1000
           per: 60
           ready: true
-        yield cheap.put
+        await cheap.put
           _id:'prefix:1800'
           destination: 'us-tollfree'
-        yield cheap.put
+        await cheap.put
           _id:'destination:us-tollfree'
           destination:'us-tollfree'
           country: 'us'
@@ -251,7 +257,7 @@
             cost: 34
             duration: 1
 
-        a = yield r.rate
+        a = await r.rate
           direction: 'egress'
           from: '33972222713'
           to: '18002255288'
@@ -272,7 +278,6 @@
         a.carrier.should.have.property 'source', 'test5'
         a.carrier.should.have.property 'source_id'
         a.carrier.should.have.property 'rating'
-        a.carrier.should.have.property 'rating_table'
         a.carrier.should.have.property 'connect_stamp'
         a.carrier.should.have.property 'timezone'
         a.carrier.should.have.property 'duration'

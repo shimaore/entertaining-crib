@@ -1,14 +1,19 @@
-    seem = require 'seem'
-
-    find_prefix_in = seem (destination,database) ->
+    find_prefix_in = (destination,database) ->
 
       ids = [0..destination.length]
         .map (l) -> "prefix:#{destination[0...l]}"
         .reverse()
 
-      {rows} = yield database.allDocs
-        keys: ids
-        include_docs: true
-      (row.doc for row in rows when row.doc?)[0] ? null
+      result = null
+      await database
+        .query null, '_all_docs',
+          keys: JSON.stringify ids
+          include_docs: true
+        .filter ({doc}) -> doc?
+        .take 1
+        .observe ({doc}) ->
+          console.log 'find...', doc
+          result = doc
+      result
 
     module.exports = find_prefix_in

@@ -33,12 +33,10 @@ Data
 
     class Rating
 
-* cfg.table_prefix (string) The prefix used to build the names of rating tables. Default: `rates`
 * cfg.rating_tables ignore
 * cfg.source ignore
 
       constructor: (@cfg) ->
-        @table_prefix = @cfg.table_prefix ? 'rates'
         @source = @cfg.source
         @rating_tables = @cfg.rating_tables
         unless @source?
@@ -81,9 +79,8 @@ Data
           rated.connect_stamp = connect_stamp.format()
 
           rated.rating = rating_of data.rating, connect_stamp, data.timezone
-          rated.rating_table = [@table_prefix,rated.rating.table].join '-'
 
-          rating_db_name = rated.rating_table
+          rating_db_name = rated.rating.table
           debug "rate_client_or_carrier: using rating_db_name #{rating_db_name}"
           rating_db = @rating_tables rating_db_name
 
