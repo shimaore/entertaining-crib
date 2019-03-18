@@ -28,7 +28,7 @@
         after -> db.destroy()
         await db.put _id: 'prefix:339'
         a = await find_prefix_in '33972222713', db
-        a.should.have.property '_id', 'prefix:339'
+        (expect a).to.have.property '_id', 'prefix:339'
 
       it 'should return the longest one', ->
         db = new CouchDB prefix+'/'+'test4'
@@ -38,4 +38,4 @@
         await db.put _id: 'prefix:33972'
         await db.put _id: 'prefix:3397222'
         a = await find_prefix_in '33972222713', db
-        a.should.have.property '_id', 'prefix:3397222'
+        (expect a).to.have.property '_id', 'prefix:3397222'

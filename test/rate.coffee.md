@@ -1,13 +1,13 @@
     pkg = require '../package'
     debug = (require 'tangible') "#{pkg.name}:test:rate"
     {expect} = chai = require 'chai'
-    chai.should()
     CouchDB = require 'most-couchdb'
+    chai.should()
     prefix = 'http://admin:password@couchdb:5984'
 
     describe 'Rating', ->
       Rating = require '../rating'
-      rating_tables = (name) -> new CouchDB prefix+'/rates-'+name
+      rating_tables = (name) -> prefix+'/rates-'+name
 
       it 'should not rate unless client or carrier are specified', ->
         r = new Rating {rating_tables,source:'test1'}
@@ -24,7 +24,7 @@
 
       it 'should rate carrier', ->
         r = new Rating {rating_tables,source:'test2'}
-        cheap = rating_tables 'cheap'
+        cheap = new CouchDB rating_tables 'cheap'
         after -> cheap.destroy()
         await cheap.create()
         await cheap.put
@@ -80,12 +80,12 @@
         a.carrier.should.have.property 'actual_amount'
         a.carrier.should.have.property 'divider', 1000
         a.carrier.should.have.property 'subsequent'
-        a.carrier.subsequent.should.have.property 'cost', 34
+        (expect a.carrier.subsequent).to.have.property 'cost', 34
         a.carrier.should.have.property '_id'
 
       it 'should rate client', ->
         r = new Rating {rating_tables,source:'test3'}
-        expensive = rating_tables 'expensive'
+        expensive = new CouchDB rating_tables 'expensive'
         after -> expensive.destroy()
         await expensive.create()
         await expensive.put
@@ -140,12 +140,12 @@
         a.client.should.have.property 'actual_amount'
         a.client.should.have.property 'divider', 100
         a.client.should.have.property 'subsequent'
-        a.client.subsequent.should.have.property 'cost', 1500
+        (expect a.client.subsequent).to.have.property 'cost', 1500
         a.client.should.have.property '_id'
 
       it 'should rate client and carrier', ->
         r = new Rating {rating_tables,source:'test4'}
-        expensive = rating_tables 'client-2'
+        expensive = new CouchDB rating_tables 'client-2'
         after -> expensive.destroy()
         await expensive.create()
         await expensive.put
@@ -166,7 +166,7 @@
           subsequent:
             cost: 1500
             duration: 30
-        cheap = rating_tables 'carrier-a'
+        cheap = new CouchDB rating_tables 'carrier-a'
         after -> cheap.destroy()
         await cheap.create()
         await cheap.put
@@ -215,7 +215,7 @@
         a.client.should.have.property 'integer_amount', 750
         a.client.should.have.property 'divider', 100
         a.client.should.have.property 'subsequent'
-        a.client.subsequent.should.have.property 'cost', 1500
+        (expect a.client.subsequent).to.have.property 'cost', 1500
         a.client.should.have.property '_id'
         a.should.have.property 'carrier'
         a.carrier.should.have.property 'billable_number', '33972222713'
@@ -226,12 +226,12 @@
         a.carrier.should.have.property 'integer_amount', 131
         a.carrier.should.have.property 'divider', 1000
         a.carrier.should.have.property 'subsequent'
-        a.carrier.subsequent.should.have.property 'cost', 340
+        (expect a.carrier.subsequent).to.have.property 'cost', 340
         a.carrier.should.have.property '_id', 'b55z21-O5phll2-KkDM4a-N' # '33972222713-2013-05-14T12:52:23-04:00-19005551212-23'
 
       it 'should rate destinations', ->
         r = new Rating {rating_tables,source:'test5'}
-        cheap = rating_tables 'cheap-5'
+        cheap = new CouchDB rating_tables 'cheap-5'
         after -> cheap.destroy()
         await cheap.create()
         await cheap.put
@@ -292,5 +292,5 @@
         a.carrier.should.have.property 'actual_amount'
         a.carrier.should.have.property 'divider', 1000
         a.carrier.should.have.property 'subsequent'
-        a.carrier.subsequent.should.have.property 'cost', 34
+        (expect a.carrier.subsequent).to.have.property 'cost', 34
         a.carrier.should.have.property '_id'

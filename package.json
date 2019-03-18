@@ -28,12 +28,12 @@
   "dependencies": {
     "base-p": "^2.0.0",
     "moment-timezone": "^0.5.23",
+    "most-couchdb": "^2.0.0",
     "tangible": "^3.0.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "coffeescript": "^2.3.1",
-    "mocha": "^5.2.0",
-    "most-couchdb": "^1.5.0"
+    "coffeescript": "^2.3.2",
+    "mocha": "^6.0.2"
   }
 }

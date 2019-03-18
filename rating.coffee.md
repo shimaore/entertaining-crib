@@ -82,7 +82,7 @@ Data
 
           rating_db_name = rated.rating.table
           debug "rate_client_or_carrier: using rating_db_name #{rating_db_name}"
-          rating_db = @rating_tables rating_db_name
+          rating_db = new CouchDB (@rating_tables rating_db_name), true
 
           try
             configuration = await rating_db.get 'configuration'
@@ -170,3 +170,4 @@ Toolbox
     moment = require 'moment-timezone'
     pkg = require './package'
     debug = (require 'tangible') "#{pkg.name}:rating"
+    CouchDB = require 'most-couchdb'

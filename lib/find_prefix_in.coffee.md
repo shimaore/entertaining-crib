@@ -7,7 +7,7 @@
       result = null
       await database
         .query null, '_all_docs',
-          keys: JSON.stringify ids
+          keys: ids
           include_docs: true
         .filter ({doc}) -> doc?
         .take 1
