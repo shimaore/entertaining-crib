@@ -8,7 +8,7 @@
     "prepublishOnly": "npm run build",
     "build": "npm install --only=dev && rm package-lock.json && coffee -c *.coffee.md lib/*.coffee.md",
     "pretest": "npm run build && coffee -c test/*.coffee.md",
-    "test": "mocha"
+    "test": "nyc mocha"
   },
   "repository": {
     "type": "git",
@@ -27,13 +27,14 @@
   "homepage": "https://gitlab.com/shimaore/entertaining-crib",
   "dependencies": {
     "base-p": "^2.0.0",
-    "moment-timezone": "^0.5.23",
-    "most-couchdb": "^2.0.0",
+    "moment-timezone": "^0.5.25",
+    "most-couchdb": "^3.3.1",
     "tangible": "^3.0.0"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
-    "coffeescript": "^2.3.2",
-    "mocha": "^6.0.2"
+    "chai": "^4.2.0",
+    "coffeescript": "^2.4.1",
+    "mocha": "^6.0.2",
+    "nyc": "^14.1.1"
   }
 }
